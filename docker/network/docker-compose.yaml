@@ -1,0 +1,107 @@
+version: "3.8"
+
+services:
+    work1:
+        command: >
+            /app/node
+            --log-level debug
+            --role worker
+            --private-key /var/keys/priv.bin
+            --port 9002
+            --peer-db pdb
+            --function-db fdb
+            --workspace workspace
+            --runtime /app/runtime
+            --boot-nodes "/ip4/172.19.0.3/tcp/9003/p2p/12D3KooWHThfyFJp2z2HFKMvUy3aYNTgqgYbnn1FV8tEizmRQGnS,/ip4/172.19.0.4/tcp/9004/p2p/12D3KooWJwzdgVWkycaTA7pZBzMRRpT5GEAeL9XTzEUXUjTRz8JS,/ip4/172.19.0.10/tcp/9010/p2p/12D3KooWReLfyNoHUAsiFos5vGqJSsDTU9BmChgHPaLP4A5Wh3fX"
+        image: b7s-node
+        volumes:
+            - type: bind
+              source: ./keys/work1/
+              target: /var/keys
+              read_only: true
+        networks:
+            b7s-local:
+                aliases:
+                    - work1
+                ipv4_address: 172.19.0.2
+
+    work2:
+        command: >
+            /app/node
+            --log-level debug
+            --role worker
+            --private-key /var/keys/priv.bin
+            --port 9003
+            --peer-db pdb
+            --function-db fdb
+            --workspace workspace
+            --runtime /app/runtime
+            --boot-nodes "/ip4/172.19.0.2/tcp/9002/p2p/12D3KooWGFRA2de2nLqtYXTSzucWRtXHcmEk2SuB5LnftRdmZKhU,/ip4/172.19.0.4/tcp/9004/p2p/12D3KooWJwzdgVWkycaTA7pZBzMRRpT5GEAeL9XTzEUXUjTRz8JS,/ip4/172.19.0.10/tcp/9010/p2p/12D3KooWReLfyNoHUAsiFos5vGqJSsDTU9BmChgHPaLP4A5Wh3fX"
+        image: b7s-node
+        volumes:
+            - type: bind
+              source: ./keys/work2/
+              target: /var/keys
+              read_only: true
+        networks:
+            b7s-local:
+                aliases:
+                    - work2
+                ipv4_address: 172.19.0.3
+
+    work3:
+        command: >
+            /app/node
+            --log-level debug
+            --role worker
+            --private-key /var/keys/priv.bin
+            --port 9004
+            --peer-db pdb
+            --function-db fdb
+            --workspace workspace
+            --runtime /app/runtime
+            --boot-nodes "/ip4/172.19.0.2/tcp/9002/p2p/12D3KooWGFRA2de2nLqtYXTSzucWRtXHcmEk2SuB5LnftRdmZKhU,/ip4/172.19.0.3/tcp/9003/p2p/12D3KooWHThfyFJp2z2HFKMvUy3aYNTgqgYbnn1FV8tEizmRQGnS,/ip4/172.19.0.10/tcp/9010/p2p/12D3KooWReLfyNoHUAsiFos5vGqJSsDTU9BmChgHPaLP4A5Wh3fX"
+        image: b7s-node
+        volumes:
+            - type: bind
+              source: ./keys/work3/
+              target: /var/keys
+              read_only: true
+        networks:
+            b7s-local:
+                aliases:
+                    - work3
+                ipv4_address: 172.19.0.4
+
+    head:
+        command: >
+            /app/node
+            --log-level debug
+            --role head
+            --private-key /var/keys/priv.bin
+            --port 9010
+            --peer-db pdb
+            --function-db fdb
+            --workspace workspace
+            --rest-api ':8081'
+            --boot-nodes '/ip4/172.19.0.2/tcp/9002/p2p/12D3KooWGFRA2de2nLqtYXTSzucWRtXHcmEk2SuB5LnftRdmZKhU,/ip4/172.19.0.3/tcp/9003/p2p/12D3KooWHThfyFJp2z2HFKMvUy3aYNTgqgYbnn1FV8tEizmRQGnS,/ip4/172.19.0.4/tcp/9004/p2p/12D3KooWJwzdgVWkycaTA7pZBzMRRpT5GEAeL9XTzEUXUjTRz8JS'
+        image: b7s-node
+        ports:
+            - "8081:8081"
+        volumes:
+            - type: bind
+              source: ./keys/head/
+              target: /var/keys
+              read_only: true
+        networks:
+            b7s-local:
+                aliases:
+                    - head
+                ipv4_address: 172.19.0.10
+
+networks:
+    b7s-local:
+        driver: bridge
+        ipam:
+            config:
+                - subnet: 172.19.0.0/24
