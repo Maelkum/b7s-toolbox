@@ -5,6 +5,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"time"
+)
+
+const (
+	sleepEnvVar = "B7S_SLEEP"
 )
 
 func main() {
@@ -23,4 +29,10 @@ func main() {
 	}
 
 	fmt.Printf("%s\n", payload)
+
+	sec, _ := strconv.ParseInt(os.Getenv(sleepEnvVar), 10, 32)
+
+	if sec > 0 {
+		time.Sleep(time.Duration(sec) * time.Second)
+	}
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -8,12 +9,17 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/blocklessnetworking/b7s/executor"
+	"github.com/blocklessnetworking/b7s/executor/limits"
 	"github.com/blocklessnetworking/b7s/models/execute"
 )
 
 const (
 	success = 0
 	failure = 1
+)
+
+const (
+	sleepEnvVar = "B7S_SLEEP"
 )
 
 var (
@@ -37,6 +43,11 @@ func run() int {
 		flagArgs       []string
 		flagEnv        []string
 
+		flagCPURate     float64
+		flagMemoryMaxKB int64
+
+		flagCLIDuration int
+
 		flagCfg execute.RuntimeConfig
 	)
 
@@ -57,6 +68,11 @@ func run() int {
 	pflag.Uint64Var(&flagCfg.ExecutionTime, "runtime-execution-time", 0, "runtime execution time")
 	pflag.BoolVar(&flagCfg.DebugInfo, "runtime-debug", false, "runtime debug")
 
+	pflag.Float64Var(&flagCPURate, "cpu-rate", 1.0, "cpu rate")
+	pflag.Int64Var(&flagMemoryMaxKB, "memory-limit", 0, "memory limit (kB)")
+
+	pflag.IntVar(&flagCLIDuration, "cli-duration", 0, "value for the B7S_SLEEP environment variable")
+
 	// Runtime flags
 
 	pflag.CommandLine.SortFlags = false
@@ -69,10 +85,30 @@ func run() int {
 		log = log.Level(level)
 	}
 
-	ex, err := executor.New(
-		log,
+	options := []executor.Option{
 		executor.WithWorkDir(flagWorkspace),
 		executor.WithRuntimeDir(flagRuntime),
+	}
+
+	// Create a limiter if needed.
+	if flagCPURate != 1.0 || flagMemoryMaxKB > 0 {
+
+		log.Info().Msg("creating limiter")
+
+		limiter, err := limits.New(limits.WithCPUPercentage(flagCPURate), limits.WithMemoryKB(flagMemoryMaxKB))
+		if err != nil {
+			log.Error().Err(err).Msg("could not create limiter")
+			return failure
+		}
+
+		defer limiter.Shutdown()
+
+		options = append(options, executor.WithLimiter(limiter))
+	}
+
+	ex, err := executor.New(
+		log,
+		options...,
 	)
 	if err != nil {
 		log.Error().Err(err).Msg("could not create executor")
@@ -127,6 +163,15 @@ func run() int {
 		}
 
 		request.Config.Environment = vars
+	}
+
+	// Set the environment variable for the dummy CLI, if specified.
+	if flagCLIDuration != 0 {
+		sleepVar := execute.EnvVar{
+			Name:  sleepEnvVar,
+			Value: fmt.Sprint(flagCLIDuration),
+		}
+		request.Config.Environment = append(request.Config.Environment, sleepVar)
 	}
 
 	log.Info().Interface("request", request).Msg("request to be executed")
