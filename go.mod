@@ -3,13 +3,14 @@ module github.com/Maelkum/b7s-toolbox
 go 1.19
 
 replace github.com/blocklessnetworking/b7s => ../b7s
-
-replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+replace	github.com/lxzan/gws v1.5.0 => ../custom/gws/
+replace github.com/libp2p/go-libp2p v0.26.4 => ../../libp2p/go-libp2p
 
 require (
 	github.com/blocklessnetworking/b7s v0.0.21
 	github.com/cockroachdb/pebble v0.0.0-20230406223121-124486b0f85d
 	github.com/libp2p/go-libp2p v0.26.4
+	github.com/lxzan/gws v1.5.0
 	github.com/multiformats/go-multiaddr v0.8.0
 	github.com/rs/zerolog v1.29.0
 	github.com/spf13/pflag v1.0.5
@@ -61,7 +62,7 @@ require (
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
 	github.com/jbenet/go-temp-err-catcher v0.1.0 // indirect
 	github.com/jbenet/goprocess v0.1.4 // indirect
-	github.com/klauspost/compress v1.15.15 // indirect
+	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/koron/go-ssdp v0.0.3 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
@@ -135,3 +136,5 @@ require (
 	lukechampine.com/blake3 v1.1.7 // indirect
 	nhooyr.io/websocket v1.8.7 // indirect
 )
+
+replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
