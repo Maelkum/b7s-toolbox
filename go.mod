@@ -4,6 +4,10 @@ go 1.19
 
 replace github.com/blocklessnetworking/b7s => ../b7s
 
+replace github.com/lxzan/gws v1.5.0 => ../custom/gws/
+
+replace github.com/libp2p/go-libp2p v0.26.4 => ../../libp2p/go-libp2p
+
 require (
 	github.com/Knetic/govaluate v3.0.0+incompatible
 	github.com/blocklessnetworking/b7s v0.0.21
