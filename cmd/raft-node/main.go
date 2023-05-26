@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/raft"
 	boltdb "github.com/hashicorp/raft-boltdb"
 
-	"github.com/Maelkum/b7s-toolbox/node"
+	"github.com/Maelkum/b7s-toolbox/raft/node"
 )
 
 const (
@@ -58,7 +58,6 @@ func run() int {
 
 	address := fmt.Sprintf("%v:%v", flagAddress, flagPort)
 
-	// TODO: See what this DB does.
 	logDBPath := filepath.Join(flagID, logName)
 	logStore, err := boltdb.NewBoltStore(logDBPath)
 	if err != nil {
@@ -66,7 +65,6 @@ func run() int {
 		return failure
 	}
 
-	// TODO: See what this DB does.
 	stableDBPath := filepath.Join(flagID, stableName)
 	stableDB, err := boltdb.NewBoltStore(stableDBPath)
 	if err != nil {
@@ -87,7 +85,11 @@ func run() int {
 		return failure
 	}
 
-	_ = node
+	err = node.Run()
+	if err != nil {
+		log.Error().Err(err).Msg("node main loop failed")
+		return failure
+	}
 
 	return success
 }

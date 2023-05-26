@@ -17,4 +17,4 @@ cmd/execute/execute
 cmd/function-sync/function-sync
 cmd/blockless-cli-echo/blockless-cli
 exp/ws/ws
-node/raft-node/raft-node
+cmd/raft-node/raft-node
