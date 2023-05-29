@@ -1,7 +1,7 @@
 package node
 
 import (
-	"errors"
+	"fmt"
 )
 
 // TODO: What the node should do:
@@ -9,5 +9,13 @@ import (
 // https://github.com/Knetic/govaluate
 
 func (n *Node) Run() error {
-	return errors.New("TBD: not implemented")
+
+	n.log.Info().Msg("starting node main loop")
+
+	err := n.grpcServer.Serve(n.listener)
+	if err != nil {
+		return fmt.Errorf("could not start node: %w", err)
+	}
+
+	return nil
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 
@@ -9,7 +10,7 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/hashicorp/raft"
-	boltdb "github.com/hashicorp/raft-boltdb"
+	boltdb "github.com/hashicorp/raft-boltdb/v2"
 
 	"github.com/Maelkum/b7s-toolbox/raft/node"
 )
@@ -72,7 +73,13 @@ func run() int {
 		return failure
 	}
 
-	node, err := node.NewNode(log, flagID, address,
+	conn, err := net.Listen("tcp", address)
+	if err != nil {
+		log.Error().Err(err).Str("address", address).Msg("could not listen on port")
+		return failure
+	}
+
+	node, err := node.NewNode(log, flagID, address, conn,
 		node.BootstrapCluster(flagBootstrap),
 		node.WithLogStore(logStore),
 		node.WithStableStore(stableDB),
