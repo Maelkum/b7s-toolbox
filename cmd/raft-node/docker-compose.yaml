@@ -1,0 +1,82 @@
+version: "3.8"
+
+services:
+  node1:
+    command: >
+      /app/node
+        --port 9011
+        --id node1
+        --address 172.19.0.11
+        --peer node1=172.19.0.11:9011
+        --peer node2=172.19.0.12:9012
+        --peer node3=172.19.0.13:9013
+        --peer node4=172.19.0.14:9014
+    image: raft-node
+    ports:
+      - "9011:9011"
+    networks:
+      raft-local:
+        aliases:
+          - node1
+        ipv4_address: 172.19.0.11
+  node2:
+    command: >
+      /app/node
+        --port 9012
+        --id node2
+        --address 172.19.0.12
+        --peer node1=172.19.0.11:9011
+        --peer node2=172.19.0.12:9012
+        --peer node3=172.19.0.13:9013
+        --peer node4=172.19.0.14:9014
+    image: raft-node
+    ports:
+      - "9012:9012"
+    networks:
+      raft-local:
+        aliases: 
+          - node2
+        ipv4_address: 172.19.0.12
+  node3:
+    command: >
+      /app/node
+        --port 9013
+        --id node3
+        --address 172.19.0.13
+        --peer node1=172.19.0.11:9011
+        --peer node2=172.19.0.12:9012
+        --peer node3=172.19.0.13:9013
+        --peer node4=172.19.0.14:9014
+    image: raft-node
+    ports:
+      - "9013:9013"
+    networks:
+      raft-local:
+        aliases: 
+          - node3
+        ipv4_address: 172.19.0.13
+  node4:
+    command: >
+      /app/node
+        --port 9014
+        --id node4
+        --address 172.19.0.14
+        --peer node1=172.19.0.11:9011
+        --peer node2=172.19.0.12:9012
+        --peer node3=172.19.0.13:9013
+        --peer node4=172.19.0.14:9014
+    image: raft-node
+    ports:
+      - "9014:9014"
+    networks:
+      raft-local:
+        aliases: 
+          - node4
+        ipv4_address: 172.19.0.14
+
+networks:
+  raft-local:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.19.0.0/24

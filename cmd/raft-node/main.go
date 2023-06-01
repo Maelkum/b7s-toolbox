@@ -63,6 +63,12 @@ func run() int {
 
 	address := fmt.Sprintf("%v:%v", flagAddress, flagPort)
 
+	err := os.MkdirAll(flagID, os.ModePerm)
+	if err != nil {
+		log.Error().Err(err).Msg("could not create node directory")
+		return failure
+	}
+
 	logDBPath := filepath.Join(flagID, logName)
 	logStore, err := boltdb.NewBoltStore(logDBPath)
 	if err != nil {
