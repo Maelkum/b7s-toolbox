@@ -13,9 +13,7 @@ import (
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/raft"
 
-	"github.com/Jille/raft-grpc-leader-rpc/leaderhealth"
 	transport "github.com/Jille/raft-grpc-transport"
-	"github.com/Jille/raftadmin"
 
 	"github.com/Maelkum/b7s-toolbox/raft/proto"
 )
@@ -78,8 +76,6 @@ func NewNode(log zerolog.Logger, id string, address string, listener net.Listene
 
 	proto.RegisterSolveServer(server, &node)
 	transport.Register(server)
-	leaderhealth.Setup(raftNode, server, []string{"Test"})
-	raftadmin.Register(server, raftNode)
 	reflection.Register(server)
 
 	// If we have no peers we're useless so return an error.

@@ -7,9 +7,7 @@ replace github.com/blocklessnetworking/b7s => ../b7s
 replace github.com/libp2p/go-libp2p v0.26.4 => ../../chaitanyaprem/go-libp2p
 
 require (
-	github.com/Jille/raft-grpc-leader-rpc v1.1.0
 	github.com/Jille/raft-grpc-transport v1.4.0
-	github.com/Jille/raftadmin v1.2.0
 	github.com/Knetic/govaluate v3.0.0+incompatible
 	github.com/blocklessnetworking/b7s v0.0.21
 	github.com/cockroachdb/pebble v0.0.0-20230406223121-124486b0f85d
