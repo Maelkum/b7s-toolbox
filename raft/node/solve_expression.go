@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/raft"
+
 	"github.com/Maelkum/b7s-toolbox/raft/proto"
 )
 
@@ -15,11 +17,17 @@ func (n *Node) SolveExpression(context context.Context, request *proto.SolveRequ
 	n.log.Info().
 		Str("expression", request.Expression).
 		Interface("params", request.Parameters).
+		Str("state", n.raft.State().String()).
 		Msg("received solve request")
 
 	payload, err := json.Marshal(request)
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal solve request: %w", err)
+	}
+
+	if n.raft.State() != raft.Leader {
+		addr, id := n.raft.LeaderWithID()
+		return nil, fmt.Errorf("node is not the leader, send requests to %v at %v", id, addr)
 	}
 
 	n.log.Info().Msg("node about to apply raft log")
