@@ -9,8 +9,6 @@ type Option func(cfg *Config)
 
 // Config options for the Node.
 type Config struct {
-	Bootstrap bool
-
 	// Used to store and retrieve logs.
 	LogStore raft.LogStore
 
@@ -19,13 +17,9 @@ type Config struct {
 
 	// Snapshot storage and retrieval.
 	SnapshotStore raft.SnapshotStore
-}
 
-// Should the node bootstrap a Raft cluster.
-func BootstrapCluster(should bool) Option {
-	return func(cfg *Config) {
-		cfg.Bootstrap = should
-	}
+	// Peers that are part of this cluster
+	Peers []Peer
 }
 
 // Specify log store the node should use.
@@ -45,5 +39,11 @@ func WithStableStore(store raft.StableStore) Option {
 func WithSnapshotStore(store raft.SnapshotStore) Option {
 	return func(cfg *Config) {
 		cfg.SnapshotStore = store
+	}
+}
+
+func WithPeers(peers []Peer) Option {
+	return func(cfg *Config) {
+		cfg.Peers = peers
 	}
 }

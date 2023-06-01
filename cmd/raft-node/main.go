@@ -5,6 +5,8 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/rs/zerolog"
 	"github.com/spf13/pflag"
@@ -32,16 +34,16 @@ func main() {
 func run() int {
 
 	var (
-		flagAddress   string
-		flagPort      uint
-		flagID        string
-		flagBootstrap bool
+		flagAddress string
+		flagPort    uint
+		flagID      string
+		flagPeers   []string
 	)
 
 	pflag.StringVarP(&flagAddress, "address", "a", "127.0.0.1", "address to use")
 	pflag.UintVarP(&flagPort, "port", "p", 0, "port to use")
 	pflag.StringVar(&flagID, "id", "", "node id")
-	pflag.BoolVar(&flagBootstrap, "bootstrap", false, "should node cluster be bootstrapped")
+	pflag.StringSliceVar(&flagPeers, "peer", []string{}, "peers to add to the cluster")
 
 	pflag.Parse()
 
@@ -49,6 +51,8 @@ func run() int {
 		With().Timestamp().
 		Str("@module", "main").
 		Logger()
+
+	zerolog.TimeFieldFormat = time.RFC3339Nano
 
 	if flagID == "" {
 		log.Error().Msg("ID not specified")
@@ -79,11 +83,33 @@ func run() int {
 		return failure
 	}
 
+	if len(flagPeers) == 0 {
+		log.Error().Msg("peer list cannot be empty")
+		return failure
+	}
+
+	var peers []node.Peer
+	for _, p := range flagPeers {
+
+		fields := strings.Split(p, "=")
+		if len(fields) != 2 {
+			log.Error().Str("peer", p).Msg("invalid peer specification, should be <node_id>=<address>")
+			return failure
+		}
+
+		peer := node.Peer{
+			ID:      fields[0],
+			Address: fields[1],
+		}
+
+		peers = append(peers, peer)
+	}
+
 	node, err := node.NewNode(log, flagID, address, conn,
-		node.BootstrapCluster(flagBootstrap),
 		node.WithLogStore(logStore),
 		node.WithStableStore(stableDB),
 		node.WithSnapshotStore(raft.NewDiscardSnapshotStore()),
+		node.WithPeers(peers),
 	)
 	if err != nil {
 		log.Error().Err(err).

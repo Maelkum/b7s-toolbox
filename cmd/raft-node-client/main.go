@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Maelkum/b7s-toolbox/raft/proto"
 	"github.com/rs/zerolog"
@@ -40,6 +41,8 @@ func run() int {
 	log := zerolog.New(os.Stderr).
 		With().Timestamp().
 		Logger()
+
+	zerolog.TimeFieldFormat = time.RFC3339Nano
 
 	if flagExpression == "" {
 		log.Error().Msg("expression cannot be empty")
@@ -95,6 +98,8 @@ func run() int {
 		log.Error().Err(err).Msg("solve request failed")
 		return failure
 	}
+
+	log.Info().Msg("received response")
 
 	out, _ := json.Marshal(response)
 	fmt.Printf("%s\n", out)
