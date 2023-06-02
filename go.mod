@@ -4,8 +4,6 @@ go 1.19
 
 replace github.com/blocklessnetworking/b7s => ../b7s
 
-replace github.com/libp2p/go-libp2p v0.26.4 => ../../chaitanyaprem/go-libp2p
-
 require (
 	github.com/Jille/raft-grpc-transport v1.4.0
 	github.com/Knetic/govaluate v3.0.0+incompatible
