@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "github.com/Maelkum/b7s-toolbox/raft/proto";
+
+service Solve {
+    rpc SolveExpression(SolveRequest) returns (SolveResponse) {}
+}
+
+message SolveRequest {
+    string expression = 1;
+    map<string, double> parameters = 2;
+}
+
+message SolveResponse {
+    string expression = 1;
+    map<string, double> parameters = 2;
+    double result = 3;
+}
