@@ -1,17 +1,24 @@
 version: "3.8"
 
 services:
+  # 12D3KooWKEggVPtSREMRA4uogRGQPpkdkqZBeD7ucuWgwHHxmRw4
+  # /ip4/172.19.0.11/tcp/9011/p2p/12D3KooWKEggVPtSREMRA4uogRGQPpkdkqZBeD7ucuWgwHHxmRw4
   node1:
     command: >
       /app/node
         --port 9011
-        --id node1
+        --private-key /var/keys/priv.bin
         --address 172.19.0.11
-        --peer node1=172.19.0.11:9011
-        --peer node2=172.19.0.12:9012
-        --peer node3=172.19.0.13:9013
-        --peer node4=172.19.0.14:9014
+        --peer 12D3KooWKEggVPtSREMRA4uogRGQPpkdkqZBeD7ucuWgwHHxmRw4=/ip4/172.19.0.11/tcp/9011/p2p/12D3KooWKEggVPtSREMRA4uogRGQPpkdkqZBeD7ucuWgwHHxmRw4
+        --peer 12D3KooWPUWanJKBiVmhVdGgPQVPWvLy6BZYcGWyCy5NzV7B4vnk=/ip4/172.19.0.12/tcp/9012/p2p/12D3KooWPUWanJKBiVmhVdGgPQVPWvLy6BZYcGWyCy5NzV7B4vnk
+        --peer 12D3KooWNuR3gsJ869656jGgUP5wHaMWCjKb6f1csdSovaAjhU6G=/ip4/172.19.0.13/tcp/9013/p2p/12D3KooWNuR3gsJ869656jGgUP5wHaMWCjKb6f1csdSovaAjhU6G
+        --peer 12D3KooWE1wa14neCbDw14VdzdRS1eHW9hrwe98jC5RAFoXuxmKn=/ip4/172.19.0.14/tcp/9014/p2p/12D3KooWE1wa14neCbDw14VdzdRS1eHW9hrwe98jC5RAFoXuxmKn
     image: raft-node
+    volumes:
+      - type: bind
+        source: ./keys/node1/
+        target: /var/keys
+        read_only: true
     ports:
       - "9011:9011"
     networks:
@@ -20,16 +27,23 @@ services:
           - node1
         ipv4_address: 172.19.0.11
   node2:
+    # 12D3KooWPUWanJKBiVmhVdGgPQVPWvLy6BZYcGWyCy5NzV7B4vnk
+    # /ip4/172.19.0.12/tcp/9012/p2p/12D3KooWPUWanJKBiVmhVdGgPQVPWvLy6BZYcGWyCy5NzV7B4vnk
     command: >
       /app/node
         --port 9012
-        --id node2
+        --private-key /var/keys/priv.bin
         --address 172.19.0.12
-        --peer node1=172.19.0.11:9011
-        --peer node2=172.19.0.12:9012
-        --peer node3=172.19.0.13:9013
-        --peer node4=172.19.0.14:9014
+        --peer 12D3KooWKEggVPtSREMRA4uogRGQPpkdkqZBeD7ucuWgwHHxmRw4=/ip4/172.19.0.11/tcp/9011/p2p/12D3KooWKEggVPtSREMRA4uogRGQPpkdkqZBeD7ucuWgwHHxmRw4
+        --peer 12D3KooWPUWanJKBiVmhVdGgPQVPWvLy6BZYcGWyCy5NzV7B4vnk=/ip4/172.19.0.12/tcp/9012/p2p/12D3KooWPUWanJKBiVmhVdGgPQVPWvLy6BZYcGWyCy5NzV7B4vnk
+        --peer 12D3KooWNuR3gsJ869656jGgUP5wHaMWCjKb6f1csdSovaAjhU6G=/ip4/172.19.0.13/tcp/9013/p2p/12D3KooWNuR3gsJ869656jGgUP5wHaMWCjKb6f1csdSovaAjhU6G
+        --peer 12D3KooWE1wa14neCbDw14VdzdRS1eHW9hrwe98jC5RAFoXuxmKn=/ip4/172.19.0.14/tcp/9014/p2p/12D3KooWE1wa14neCbDw14VdzdRS1eHW9hrwe98jC5RAFoXuxmKn
     image: raft-node
+    volumes:
+      - type: bind
+        source: ./keys/node2/
+        target: /var/keys
+        read_only: true
     ports:
       - "9012:9012"
     networks:
@@ -38,16 +52,23 @@ services:
           - node2
         ipv4_address: 172.19.0.12
   node3:
+    # 12D3KooWNuR3gsJ869656jGgUP5wHaMWCjKb6f1csdSovaAjhU6G
+    # /ip4/172.19.0.13/tcp/9013/p2p/12D3KooWNuR3gsJ869656jGgUP5wHaMWCjKb6f1csdSovaAjhU6G
     command: >
       /app/node
         --port 9013
-        --id node3
+        --private-key /var/keys/priv.bin
         --address 172.19.0.13
-        --peer node1=172.19.0.11:9011
-        --peer node2=172.19.0.12:9012
-        --peer node3=172.19.0.13:9013
-        --peer node4=172.19.0.14:9014
+        --peer 12D3KooWKEggVPtSREMRA4uogRGQPpkdkqZBeD7ucuWgwHHxmRw4=/ip4/172.19.0.11/tcp/9011/p2p/12D3KooWKEggVPtSREMRA4uogRGQPpkdkqZBeD7ucuWgwHHxmRw4
+        --peer 12D3KooWPUWanJKBiVmhVdGgPQVPWvLy6BZYcGWyCy5NzV7B4vnk=/ip4/172.19.0.12/tcp/9012/p2p/12D3KooWPUWanJKBiVmhVdGgPQVPWvLy6BZYcGWyCy5NzV7B4vnk
+        --peer 12D3KooWNuR3gsJ869656jGgUP5wHaMWCjKb6f1csdSovaAjhU6G=/ip4/172.19.0.13/tcp/9013/p2p/12D3KooWNuR3gsJ869656jGgUP5wHaMWCjKb6f1csdSovaAjhU6G
+        --peer 12D3KooWE1wa14neCbDw14VdzdRS1eHW9hrwe98jC5RAFoXuxmKn=/ip4/172.19.0.14/tcp/9014/p2p/12D3KooWE1wa14neCbDw14VdzdRS1eHW9hrwe98jC5RAFoXuxmKn
     image: raft-node
+    volumes:
+      - type: bind
+        source: ./keys/node3/
+        target: /var/keys
+        read_only: true
     ports:
       - "9013:9013"
     networks:
@@ -56,16 +77,23 @@ services:
           - node3
         ipv4_address: 172.19.0.13
   node4:
+    # 12D3KooWE1wa14neCbDw14VdzdRS1eHW9hrwe98jC5RAFoXuxmKn
+    # /ip4/172.19.0.14/tcp/9014/p2p/12D3KooWE1wa14neCbDw14VdzdRS1eHW9hrwe98jC5RAFoXuxmKn
     command: >
       /app/node
         --port 9014
-        --id node4
+        --private-key /var/keys/priv.bin
         --address 172.19.0.14
-        --peer node1=172.19.0.11:9011
-        --peer node2=172.19.0.12:9012
-        --peer node3=172.19.0.13:9013
-        --peer node4=172.19.0.14:9014
+        --peer 12D3KooWKEggVPtSREMRA4uogRGQPpkdkqZBeD7ucuWgwHHxmRw4=/ip4/172.19.0.11/tcp/9011/p2p/12D3KooWKEggVPtSREMRA4uogRGQPpkdkqZBeD7ucuWgwHHxmRw4
+        --peer 12D3KooWPUWanJKBiVmhVdGgPQVPWvLy6BZYcGWyCy5NzV7B4vnk=/ip4/172.19.0.12/tcp/9012/p2p/12D3KooWPUWanJKBiVmhVdGgPQVPWvLy6BZYcGWyCy5NzV7B4vnk
+        --peer 12D3KooWNuR3gsJ869656jGgUP5wHaMWCjKb6f1csdSovaAjhU6G=/ip4/172.19.0.13/tcp/9013/p2p/12D3KooWNuR3gsJ869656jGgUP5wHaMWCjKb6f1csdSovaAjhU6G
+        --peer 12D3KooWE1wa14neCbDw14VdzdRS1eHW9hrwe98jC5RAFoXuxmKn=/ip4/172.19.0.14/tcp/9014/p2p/12D3KooWE1wa14neCbDw14VdzdRS1eHW9hrwe98jC5RAFoXuxmKn
     image: raft-node
+    volumes:
+      - type: bind
+        source: ./keys/node4/
+        target: /var/keys
+        read_only: true
     ports:
       - "9014:9014"
     networks:

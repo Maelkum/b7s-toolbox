@@ -3,17 +3,17 @@ package node
 import (
 	"errors"
 	"fmt"
-	"net"
 	"os"
+	"time"
 
 	"github.com/rs/zerolog"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/raft"
 
-	transport "github.com/Jille/raft-grpc-transport"
+	libp2praft "github.com/libp2p/go-libp2p-raft"
+
+	"github.com/blocklessnetworking/b7s/host"
 
 	"github.com/Maelkum/b7s-toolbox/raft/proto"
 )
@@ -21,19 +21,15 @@ import (
 type Node struct {
 	proto.UnimplementedSolveServer
 
-	log zerolog.Logger
-	cfg Config
+	log  zerolog.Logger
+	host *host.Host
+	cfg  Config
 
-	id       raft.ServerID
-	address  raft.ServerAddress
-	raft     *raft.Raft
-	listener net.Listener
-	solver   *solver
-
-	grpcServer *grpc.Server
+	raft   *raft.Raft
+	solver *solver
 }
 
-func NewNode(log zerolog.Logger, id string, address string, listener net.Listener, options ...Option) (*Node, error) {
+func NewNode(log zerolog.Logger, host *host.Host, options ...Option) (*Node, error) {
 
 	cfg := Config{}
 	for _, option := range options {
@@ -49,34 +45,36 @@ func NewNode(log zerolog.Logger, id string, address string, listener net.Listene
 	raftLogger := hclog.New(&logOpts)
 
 	raftCfg := raft.DefaultConfig()
-	raftCfg.LocalID = raft.ServerID(id)
+	raftCfg.LocalID = raft.ServerID(host.ID().String())
 	raftCfg.Logger = raftLogger
 
+	addresses := host.Addresses()
+	if len(addresses) == 0 {
+		return nil, fmt.Errorf("libp2p host has no addresses")
+	}
+
+	address := addresses[0]
+
 	solver := newSolver(log)
-	// NOTE: Using a fixed transport for now.
-	transport := transport.New(raft.ServerAddress(address), []grpc.DialOption{grpc.WithInsecure()})
-	raftNode, err := raft.NewRaft(raftCfg, solver, cfg.LogStore, cfg.StableStore, cfg.SnapshotStore, transport.Transport())
+
+	transport, err := libp2praft.NewLibp2pTransport(host, 5*time.Second)
+	if err != nil {
+		return nil, fmt.Errorf("could not create libp2p transport: %w", err)
+	}
+
+	raftNode, err := raft.NewRaft(raftCfg, solver, cfg.LogStore, cfg.StableStore, cfg.SnapshotStore, transport)
 	if err != nil {
 		return nil, fmt.Errorf("could not create raft node: %w", err)
 	}
 
-	server := grpc.NewServer()
-
 	node := Node{
-		log: log.With().Str("@module", "node").Logger(),
-		cfg: cfg,
+		log:  log.With().Str("@module", "node").Logger(),
+		host: host,
+		cfg:  cfg,
 
-		id:         raft.ServerID(id),
-		address:    raft.ServerAddress(address),
-		raft:       raftNode,
-		listener:   listener,
-		solver:     solver,
-		grpcServer: server,
+		raft:   raftNode,
+		solver: solver,
 	}
-
-	proto.RegisterSolveServer(server, &node)
-	transport.Register(server)
-	reflection.Register(server)
 
 	// If we have no peers we're useless so return an error.
 	if len(cfg.Peers) == 0 {
@@ -90,7 +88,7 @@ func NewNode(log zerolog.Logger, id string, address string, listener net.Listene
 	// Add self to cluster.
 	self := raft.Server{
 		Suffrage: raft.Voter,
-		ID:       raft.ServerID(id),
+		ID:       raft.ServerID(host.ID().String()),
 		Address:  raft.ServerAddress(address),
 	}
 
@@ -101,11 +99,11 @@ func NewNode(log zerolog.Logger, id string, address string, listener net.Listene
 		s := raft.Server{
 			Suffrage: raft.Voter,
 			ID:       raft.ServerID(peer.ID),
-			Address:  raft.ServerAddress(peer.Address),
+			Address:  raft.ServerAddress(peer.Address.String()),
 		}
 
 		// Self is already added.
-		if s.ID == self.ID {
+		if s.Address == self.Address {
 			continue
 		}
 

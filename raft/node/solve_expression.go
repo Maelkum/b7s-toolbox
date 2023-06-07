@@ -7,12 +7,10 @@ import (
 	"time"
 
 	"github.com/hashicorp/raft"
-
-	"github.com/Maelkum/b7s-toolbox/raft/proto"
 )
 
 // SolveExpression is required to satisfy the GRPC interface requirement.
-func (n *Node) SolveExpression(context context.Context, request *proto.SolveRequest) (*proto.SolveResponse, error) {
+func (n *Node) SolveExpression(context context.Context, request *SolveRequest) (*SolveResponse, error) {
 
 	n.log.Info().
 		Str("expression", request.Expression).
@@ -20,14 +18,20 @@ func (n *Node) SolveExpression(context context.Context, request *proto.SolveRequ
 		Str("state", n.raft.State().String()).
 		Msg("received solve request")
 
+	out := SolveResponse{
+		Expression: request.Expression,
+		Parameters: request.Parameters,
+	}
+
 	payload, err := json.Marshal(request)
 	if err != nil {
-		return nil, fmt.Errorf("could not marshal solve request: %w", err)
+
+		return &out, fmt.Errorf("could not marshal solve request: %w", err)
 	}
 
 	if n.raft.State() != raft.Leader {
 		addr, id := n.raft.LeaderWithID()
-		return nil, fmt.Errorf("node is not the leader, send requests to %v at %v", id, addr)
+		return &out, fmt.Errorf("node is not the leader, send requests to %v at %v", id, addr)
 	}
 
 	n.log.Info().Msg("node about to apply raft log")
@@ -39,7 +43,7 @@ func (n *Node) SolveExpression(context context.Context, request *proto.SolveRequ
 	err = future.Error()
 	if err != nil {
 		n.log.Error().Err(err).Msg("raft future returned an error")
-		return nil, fmt.Errorf("could not apply raft log: %w", err)
+		return &out, fmt.Errorf("could not apply raft log: %w", err)
 	}
 
 	n.log.Info().Msg("future arrived")
@@ -54,11 +58,11 @@ func (n *Node) SolveExpression(context context.Context, request *proto.SolveRequ
 		fsmErr, ok := response.(error)
 		if ok {
 			n.log.Error().Err(fsmErr).Msg("fsm returned an error")
-			return nil, fmt.Errorf("fsm returned an error: %w", fsmErr)
+			return &out, fmt.Errorf("fsm returned an error: %w", fsmErr)
 		}
 
 		n.log.Error().Msg("unexpected raft response format")
-		return nil, fmt.Errorf("unexpected raft response format")
+		return &out, fmt.Errorf("unexpected raft response format")
 	}
 
 	n.log.Info().
@@ -66,11 +70,7 @@ func (n *Node) SolveExpression(context context.Context, request *proto.SolveRequ
 		Float64("value", value).
 		Msg("node applied raft log")
 
-	out := proto.SolveResponse{
-		Expression: request.Expression,
-		Parameters: request.Parameters,
-		Result:     value,
-	}
+	out.Result = value
 
 	return &out, nil
 }
