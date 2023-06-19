@@ -19,3 +19,4 @@ cmd/blockless-cli-echo/blockless-cli
 exp/ws/ws
 cmd/raft-node/raft-node
 cmd/raft-node-client/raft-node-client
+exp/spammer/spammer
