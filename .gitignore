@@ -20,3 +20,4 @@ exp/ws/ws
 cmd/raft-node/raft-node
 cmd/raft-node-client/raft-node-client
 exp/spammer/spammer
+exp/hclogger/hclogger
