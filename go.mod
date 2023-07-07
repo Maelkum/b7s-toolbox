@@ -4,10 +4,6 @@ go 1.19
 
 replace github.com/blocklessnetworking/b7s => ../b7s
 
-replace github.com/lxzan/gws v1.5.0 => ../custom/gws/
-
-replace github.com/libp2p/go-libp2p v0.26.4 => ../../libp2p/go-libp2p
-
 require (
 	github.com/Knetic/govaluate v3.0.0+incompatible
 	github.com/blocklessnetworking/b7s v0.0.21
@@ -93,7 +89,7 @@ require (
 	github.com/libp2p/go-libp2p-kbucket v0.5.0 // indirect
 	github.com/libp2p/go-libp2p-record v0.2.0 // indirect
 	github.com/libp2p/go-msgio v0.3.0 // indirect
-	github.com/libp2p/go-nat v0.2.0 // indirect
+	github.com/libp2p/go-nat v0.1.0 // indirect
 	github.com/libp2p/go-netroute v0.2.1 // indirect
 	github.com/libp2p/go-reuseport v0.3.0 // indirect
 	github.com/libp2p/go-yamux/v4 v4.0.0 // indirect
