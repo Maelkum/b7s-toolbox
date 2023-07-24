@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"os"
 	"time"
 
-	"github.com/libp2p/go-libp2p/core/crypto"
+	"github.com/google/uuid"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/rs/zerolog"
@@ -15,6 +15,7 @@ import (
 
 	"github.com/blocklessnetworking/b7s/consensus/pbft"
 	"github.com/blocklessnetworking/b7s/host"
+	"github.com/blocklessnetworking/b7s/models/execute"
 )
 
 func main() {
@@ -42,27 +43,22 @@ func run() int {
 		return 1
 	}
 
-	if flagKey == "" {
-		log.Error().Msg("key is mandatory")
-		return 1
-	}
-
 	log := zerolog.New(os.Stderr).With().Timestamp().Logger()
 
-	host, err := host.New(log, flagAddress, flagPort, host.WithPrivateKey(flagKey))
+	host, err := host.New(log, flagAddress, flagPort)
 	if err != nil {
 		log.Error().Err(err).Msg("could not create host")
 		return 1
 	}
 
-	log.Info().Str("id", host.Host.ID().String()).Strs("address", host.Addresses()).Msg("created host")
+	// Delay start for cluster to start up.
+	time.Sleep(3 * time.Second)
 
-	// Wait for other replicas to boot up and try to connect.
-	// Could be done via peer discovery.
-	time.Sleep(1 * time.Second)
+	log.Info().Str("id", host.Host.ID().String()).Msg("created host")
 
-	var replicas []peer.ID
+	var peers []peer.ID
 	for _, addr := range flagPeers {
+
 		ma, err := multiaddr.NewMultiaddr(addr)
 		if err != nil {
 			log.Error().Err(err).Msg("could not parse multiaddress")
@@ -75,54 +71,38 @@ func run() int {
 			return 1
 		}
 
-		replicas = append(replicas, addrInfo.ID)
-
-		// Skip self.
-		if addrInfo.ID == host.ID() {
-			continue
-		}
-
 		err = host.Host.Connect(context.Background(), *addrInfo)
 		if err != nil {
 			log.Error().Err(err).Msg("could not connect to peer")
 			return 1
 		}
+
+		peers = append(peers, addrInfo.ID)
 	}
 
-	log.Info().Msg("connected to other replicas")
+	log.Info().Msg("connected to peers")
 
-	key, err := readPrivateKey(flagKey)
-	if err != nil {
-		log.Error().Err(err).Msg("could not read private key")
-		return 1
+	// Send request to all members of the cluster.
+	id := uuid.New().String()
+	request := pbft.Request{
+		ID:        id,
+		Timestamp: time.Now(),
+		Execute:   execute.Request{},
 	}
 
-	pbft, err := pbft.NewReplica(log, host, replicas, key)
-	if err != nil {
-		log.Error().Err(err).Msg("could not initialize replica")
-		return 1
+	payload, _ := json.Marshal(request)
+
+	for _, peer := range peers {
+		err = host.SendMessageOnProtocol(context.Background(), peer, payload, pbft.Protocol)
+		if err != nil {
+			log.Error().Err(err).Str("peer", peer.String()).Msg("could not send message to peer")
+			return 1
+		}
+
+		log.Info().Str("peer", peer.String()).Msg("sent request to replica")
 	}
-
-	_ = pbft
-
-	log.Info().Msg("all done")
 
 	select {}
 
 	return 0
-}
-
-func readPrivateKey(filepath string) (crypto.PrivKey, error) {
-
-	payload, err := os.ReadFile(filepath)
-	if err != nil {
-		return nil, fmt.Errorf("could not read file: %w", err)
-	}
-
-	key, err := crypto.UnmarshalPrivateKey(payload)
-	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal private key: %w", err)
-	}
-
-	return key, nil
 }

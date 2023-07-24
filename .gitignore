@@ -22,3 +22,4 @@ cmd/raft-node-client/raft-node-client
 exp/spammer/spammer
 exp/hclogger/hclogger
 cmd/pbft-node/pbft-node
+cmd/pbft-client/pbft-client
