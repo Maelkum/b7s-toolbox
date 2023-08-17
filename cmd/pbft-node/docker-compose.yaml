@@ -1,0 +1,124 @@
+version: "3.8"
+
+services:
+  # 12D3KooWEfYPTHjuia33Rd6nxkuE2QHHWXW9kXBMkjP8wTRtQTuE
+  node1:
+    environment:
+      - B7S_PBFT_BYZANTINE=yes
+    command: >
+      /app/node --private-key /var/keys/priv.bin
+      --port 9002
+      --peer /ip4/172.29.0.2/tcp/9002/p2p/12D3KooWEfYPTHjuia33Rd6nxkuE2QHHWXW9kXBMkjP8wTRtQTuE
+      --peer /ip4/172.29.0.3/tcp/9003/p2p/12D3KooWLUyGUfeC1BFyXMLJD1pjFCTCPBojb42yd6DXoxpGsPj9
+      --peer /ip4/172.29.0.4/tcp/9004/p2p/12D3KooWRPYyXvDFrLhvk24EKt6JVtC1PYdV58jCqG1YXPKFNAb5
+      --peer /ip4/172.29.0.5/tcp/9005/p2p/12D3KooWKMQhW4SGmzXf4A1kiL2hzZ8b98HqzKAofhmD3eE3vbKM
+    image: pbft-node
+    volumes:
+      - type: bind
+        source: ./keys/node1/
+        target: /var/keys
+        read_only: true
+    networks:
+      pbft-local:
+        aliases:
+          - node1
+        ipv4_address: 172.29.0.2
+
+  # 12D3KooWLUyGUfeC1BFyXMLJD1pjFCTCPBojb42yd6DXoxpGsPj9
+  node2:
+    command: >
+        /app/node
+        --private-key /var/keys/priv.bin
+        --port 9003
+        --peer /ip4/172.29.0.2/tcp/9002/p2p/12D3KooWEfYPTHjuia33Rd6nxkuE2QHHWXW9kXBMkjP8wTRtQTuE
+        --peer /ip4/172.29.0.3/tcp/9003/p2p/12D3KooWLUyGUfeC1BFyXMLJD1pjFCTCPBojb42yd6DXoxpGsPj9
+        --peer /ip4/172.29.0.4/tcp/9004/p2p/12D3KooWRPYyXvDFrLhvk24EKt6JVtC1PYdV58jCqG1YXPKFNAb5
+        --peer /ip4/172.29.0.5/tcp/9005/p2p/12D3KooWKMQhW4SGmzXf4A1kiL2hzZ8b98HqzKAofhmD3eE3vbKM
+    image: pbft-node
+    volumes:
+      - type: bind
+        source: ./keys/node2/
+        target: /var/keys
+        read_only: true
+    networks:
+      pbft-local:
+        aliases:
+          - node2
+        ipv4_address: 172.29.0.3
+
+  # 12D3KooWRPYyXvDFrLhvk24EKt6JVtC1PYdV58jCqG1YXPKFNAb5
+  node3:
+    command: >
+      /app/node
+      --private-key /var/keys/priv.bin
+      --port 9004
+      --peer /ip4/172.29.0.2/tcp/9002/p2p/12D3KooWEfYPTHjuia33Rd6nxkuE2QHHWXW9kXBMkjP8wTRtQTuE
+      --peer /ip4/172.29.0.3/tcp/9003/p2p/12D3KooWLUyGUfeC1BFyXMLJD1pjFCTCPBojb42yd6DXoxpGsPj9
+      --peer /ip4/172.29.0.4/tcp/9004/p2p/12D3KooWRPYyXvDFrLhvk24EKt6JVtC1PYdV58jCqG1YXPKFNAb5
+      --peer /ip4/172.29.0.5/tcp/9005/p2p/12D3KooWKMQhW4SGmzXf4A1kiL2hzZ8b98HqzKAofhmD3eE3vbKM
+    image: pbft-node
+    volumes:
+      - type: bind
+        source: ./keys/node3/
+        target: /var/keys
+        read_only: true
+    networks:
+      pbft-local:
+        aliases:
+          - node3
+        ipv4_address: 172.29.0.4
+
+  # 12D3KooWKMQhW4SGmzXf4A1kiL2hzZ8b98HqzKAofhmD3eE3vbKM
+  node4:
+    # environment:
+    #   - B7S_PBFT_BYZANTINE=yes
+    command: >
+      /app/node
+      --private-key /var/keys/priv.bin
+      --port 9005
+      --peer /ip4/172.29.0.2/tcp/9002/p2p/12D3KooWEfYPTHjuia33Rd6nxkuE2QHHWXW9kXBMkjP8wTRtQTuE
+      --peer /ip4/172.29.0.3/tcp/9003/p2p/12D3KooWLUyGUfeC1BFyXMLJD1pjFCTCPBojb42yd6DXoxpGsPj9
+      --peer /ip4/172.29.0.4/tcp/9004/p2p/12D3KooWRPYyXvDFrLhvk24EKt6JVtC1PYdV58jCqG1YXPKFNAb5
+      --peer /ip4/172.29.0.5/tcp/9005/p2p/12D3KooWKMQhW4SGmzXf4A1kiL2hzZ8b98HqzKAofhmD3eE3vbKM
+    image: pbft-node
+    volumes:
+      - type: bind
+        source: ./keys/node4/
+        target: /var/keys
+        read_only: true
+    networks:
+      pbft-local:
+        aliases:
+          - node4
+        ipv4_address: 172.29.0.5
+
+  # 12D3KooWDw1AF6qDZLMoASFaNAjwZ2iWo7bMgBmqhNcyW6xqz1UB
+  client:
+    command: >
+      /app/node 
+      --private-key /var/keys/priv.bin
+      --port 9010
+      --peer /ip4/172.29.0.2/tcp/9002/p2p/12D3KooWEfYPTHjuia33Rd6nxkuE2QHHWXW9kXBMkjP8wTRtQTuE
+      --peer /ip4/172.29.0.3/tcp/9003/p2p/12D3KooWLUyGUfeC1BFyXMLJD1pjFCTCPBojb42yd6DXoxpGsPj9
+      --peer /ip4/172.29.0.4/tcp/9004/p2p/12D3KooWRPYyXvDFrLhvk24EKt6JVtC1PYdV58jCqG1YXPKFNAb5
+      --peer /ip4/172.29.0.5/tcp/9005/p2p/12D3KooWKMQhW4SGmzXf4A1kiL2hzZ8b98HqzKAofhmD3eE3vbKM
+    image: pbft-client
+    ports:
+      - "8081:8081"
+    volumes:
+      - type: bind
+        source: ./keys/node5/
+        target: /var/keys
+        read_only: true
+    networks:
+      pbft-local:
+        aliases:
+          - client
+        ipv4_address: 172.29.0.10
+
+networks:
+  pbft-local:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.29.0.0/24
