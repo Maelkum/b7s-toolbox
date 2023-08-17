@@ -3,6 +3,8 @@ version: "3.8"
 services:
   # 12D3KooWEfYPTHjuia33Rd6nxkuE2QHHWXW9kXBMkjP8wTRtQTuE
   node1:
+    environment:
+      - B7S_PBFT_BYZANTINE=yes
     command: >
       /app/node --private-key /var/keys/priv.bin
       --port 9002
@@ -68,6 +70,8 @@ services:
 
   # 12D3KooWKMQhW4SGmzXf4A1kiL2hzZ8b98HqzKAofhmD3eE3vbKM
   node4:
+    # environment:
+    #   - B7S_PBFT_BYZANTINE=yes
     command: >
       /app/node
       --private-key /var/keys/priv.bin

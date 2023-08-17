@@ -1,12 +1,16 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
+	"io"
 	"os"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/rs/zerolog"
@@ -15,7 +19,9 @@ import (
 
 	"github.com/blocklessnetworking/b7s/consensus/pbft"
 	"github.com/blocklessnetworking/b7s/host"
+	"github.com/blocklessnetworking/b7s/models/blockless"
 	"github.com/blocklessnetworking/b7s/models/execute"
+	"github.com/blocklessnetworking/b7s/models/response"
 )
 
 func main() {
@@ -87,13 +93,14 @@ func run() int {
 	request := pbft.Request{
 		ID:        id,
 		Timestamp: time.Now(),
+		Origin:    host.ID(),
 		Execute:   execute.Request{},
 	}
 
 	payload, _ := json.Marshal(request)
 
 	for _, peer := range peers {
-		err = host.SendMessageOnProtocol(context.Background(), peer, payload, pbft.Protocol)
+		err = host.SendMessage(context.Background(), peer, payload)
 		if err != nil {
 			log.Error().Err(err).Str("peer", peer.String()).Msg("could not send message to peer")
 			return 1
@@ -101,6 +108,31 @@ func run() int {
 
 		log.Info().Str("peer", peer.String()).Msg("sent request to replica")
 	}
+
+	host.Host.SetStreamHandler(blockless.ProtocolID, func(stream network.Stream) {
+		defer stream.Close()
+
+		from := stream.Conn().RemotePeer()
+
+		buf := bufio.NewReader(stream)
+		payload, err := buf.ReadBytes('\n')
+		if err != nil && !errors.Is(err, io.EOF) {
+			stream.Reset()
+			log.Error().Err(err).Msg("error receiving direct message")
+			return
+		}
+
+		log.Debug().Str("peer", from.String()).Msg("received message")
+
+		var response response.Execute
+		err = json.Unmarshal(payload, &response)
+		if err != nil {
+			log.Error().Err(err).Msg("could not unpack message")
+			return
+		}
+
+		log.Info().Str("peer", from.String()).Interface("response", response).Msg("received response from a replica peer")
+	})
 
 	select {}
 
