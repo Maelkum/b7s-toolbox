@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"time"
 
@@ -65,7 +64,7 @@ func run() int {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	runSyncLoop(ctx)
+	runSyncLoop(ctx, fstore)
 
 	return success
 }
@@ -116,7 +115,7 @@ func download(fstore *fstore.FStore) int {
 
 	for i, fn := range functions {
 
-		_, err := fstore.Get(fn.Address, fn.CID, false)
+		err := fstore.Install(fn.Address, fn.CID)
 		if err != nil {
 			log.Error().Err(err).Str("cid", fn.CID).Msg("could not retrieve function")
 			return failure
@@ -132,14 +131,28 @@ const (
 	syncInterval = 5 * time.Second
 )
 
-func runSyncLoop(ctx context.Context) {
+func runSyncLoop(ctx context.Context, fstore *fstore.FStore) {
 
 	ticker := time.NewTicker(syncInterval)
+	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ticker.C:
-			fmt.Printf("running sync\n")
+
+			log.Info().Msg("running sync")
+
+			cids := fstore.InstalledFunctions()
+			for _, cid := range cids {
+
+				err := fstore.Sync(cid)
+				if err != nil {
+					log.Error().Err(err).Str("cid", cid).Msg("failed to sync function")
+					return
+				}
+
+				log.Info().Str("cid", cid).Msg("function synced ok")
+			}
 
 		case <-ctx.Done():
 			ticker.Stop()

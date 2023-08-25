@@ -9,7 +9,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
@@ -89,7 +88,7 @@ func run() int {
 	log.Info().Msg("connected to peers")
 
 	// Send request to all members of the cluster.
-	id := uuid.New().String()
+	id := "dummy-request-id"
 	request := pbft.Request{
 		ID:        id,
 		Timestamp: time.Now(),

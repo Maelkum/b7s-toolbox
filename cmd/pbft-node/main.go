@@ -97,7 +97,8 @@ func run() int {
 		return 1
 	}
 
-	pbft, err := pbft.NewReplica(log, host, DummyExecutor{}, replicas, key)
+	id := "dummy-request-id"
+	pbft, err := pbft.NewReplica(log, host, DummyExecutor{}, replicas, id, key)
 	if err != nil {
 		log.Error().Err(err).Msg("could not initialize replica")
 		return 1
