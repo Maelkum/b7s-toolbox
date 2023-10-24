@@ -2,14 +2,15 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
-	"net"
+	"net/http"
 	"os"
+	"strings"
 
 	"github.com/rs/zerolog"
 	"github.com/spf13/pflag"
-
-	"github.com/lxzan/gws"
+	"nhooyr.io/websocket"
 )
 
 const (
@@ -29,54 +30,54 @@ func run() int {
 
 	var (
 		flagAddress string
-		flagPort    uint
 		flagConnect string
 	)
 
-	pflag.StringVarP(&flagAddress, "address", "a", "localhost", "address to use")
-	pflag.UintVarP(&flagPort, "port", "p", 0, "port to use")
+	pflag.StringVarP(&flagAddress, "address", "a", "localhost:9000", "address to use")
 	pflag.StringVarP(&flagConnect, "connect", "c", "", "address to connect to")
 
 	pflag.Parse()
 
 	log = zerolog.New(os.Stderr).With().Timestamp().Logger()
 
-	addr := fmt.Sprintf("%v:%v", flagAddress, flagPort)
-
 	// Start server.
 	if flagConnect == "" {
 
-		srv := gws.NewServer(&Handler{}, nil)
+		handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 
-		log.Info().Str("address", addr).Msg("starting server")
+			conn, err := websocket.Accept(w, req, nil)
+			if err != nil {
+				log.Error().Err(err).Msg("could not accept incoming connection")
+				return
+			}
+			defer conn.CloseNow()
 
-		err := srv.Run(addr)
+			for {
+				_, payload, err := conn.Read(context.Background())
+				if err != nil {
+					log.Error().Err(err).Msg("could not read message")
+					return
+				}
+
+				fmt.Printf("> %s\n", payload)
+			}
+
+			conn.Close(websocket.StatusNormalClosure, "")
+		})
+
+		err := http.ListenAndServe(flagAddress, handler)
 		if err != nil {
-			log.Error().Err(err).Msg("could not start websocket server")
+			log.Error().Err(err).Msg("could not start server")
 			return failure
 		}
 
 		return success
 	}
 
-	// Start client.
-	tcpAddr, err := net.ResolveTCPAddr("tcp", addr)
+	opts := websocket.DialOptions{}
+	conn, _, err := websocket.Dial(context.Background(), flagConnect, &opts)
 	if err != nil {
-		log.Error().Err(err).Msg("could not resolve TCP address")
-		return failure
-	}
-
-	dialer := net.Dialer{
-		LocalAddr: tcpAddr,
-	}
-
-	opt := &gws.ClientOption{
-		Addr:   flagConnect,
-		Dialer: &dialer,
-	}
-	conn, _, err := gws.NewClient(&Handler{}, opt)
-	if err != nil {
-		log.Error().Err(err).Msg("could not create websocket client")
+		log.Error().Err(err).Msg("could not dial client")
 		return failure
 	}
 
@@ -87,8 +88,9 @@ func run() int {
 
 		fmt.Printf("msg> ")
 		text, _ := in.ReadString('\n')
+		text = strings.TrimSpace(text)
 
-		err = conn.WriteString(text)
+		err = conn.Write(context.Background(), websocket.MessageText, []byte(text))
 		if err != nil {
 			log.Error().Err(err).Msg("could not send message")
 			return failure
