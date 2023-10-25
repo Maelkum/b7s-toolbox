@@ -43,6 +43,8 @@ func run() int {
 	// Start server.
 	if flagConnect == "" {
 
+		log.Info().Str("address", flagAddress).Msg("serving on address")
+
 		handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 
 			conn, err := websocket.Accept(w, req, nil)
@@ -56,7 +58,7 @@ func run() int {
 				_, payload, err := conn.Read(context.Background())
 				if err != nil {
 					log.Error().Err(err).Msg("could not read message")
-					return
+					break
 				}
 
 				fmt.Printf("> %s\n", payload)
