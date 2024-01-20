@@ -48,7 +48,7 @@ func run() int {
 
 		flagCLIDuration int
 
-		flagCfg execute.RuntimeConfig
+		flagCfg execute.BLSRuntimeConfig
 	)
 
 	pflag.StringVarP(&flagLogLevel, "log-level", "l", "debug", "log level to use")
