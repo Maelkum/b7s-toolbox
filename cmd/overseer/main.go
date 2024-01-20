@@ -11,7 +11,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/blocklessnetworking/b7s/executor/overseer"
+	"github.com/blocklessnetwork/b7s/executor/overseer"
 )
 
 type actionFunc func(id string) (overseer.JobState, error)

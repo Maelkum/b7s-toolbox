@@ -21,7 +21,7 @@ func main() {
 		log.Fatalf("could not read key file (%s): %s", path, err)
 	}
 
-	id, err := peer.IDFromPublicKey(key.GetPublic())
+	id, err := peer.IDFromPrivateKey(key)
 	if err != nil {
 		log.Fatalf("could not determine identity: %s", err)
 	}
