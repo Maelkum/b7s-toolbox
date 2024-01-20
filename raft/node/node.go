@@ -13,7 +13,7 @@ import (
 
 	libp2praft "github.com/libp2p/go-libp2p-raft"
 
-	"github.com/blocklessnetworking/b7s/host"
+	"github.com/blocklessnetwork/b7s/host"
 
 	"github.com/Maelkum/b7s-toolbox/raft/proto"
 )

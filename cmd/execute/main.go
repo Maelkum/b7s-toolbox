@@ -8,9 +8,9 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/spf13/pflag"
 
-	"github.com/blocklessnetworking/b7s/executor"
-	"github.com/blocklessnetworking/b7s/executor/limits"
-	"github.com/blocklessnetworking/b7s/models/execute"
+	"github.com/blocklessnetwork/b7s/executor"
+	"github.com/blocklessnetwork/b7s/executor/limits"
+	"github.com/blocklessnetwork/b7s/models/execute"
 )
 
 const (
