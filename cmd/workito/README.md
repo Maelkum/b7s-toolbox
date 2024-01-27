@@ -18,7 +18,9 @@ The tool does not support some more ellaborate scenarios like roll calls or clus
 ### Install a Function
 
 ```console
-$ workito install --address /ip4/127.0.0.1/tcp/9000/p2p/12D3KooWHUeKgXT4aj8oKvtwovVMki468igSsa5F8izZY3U5UyMD bafybeia24v4czavtpjv2co3j54o4a5ztduqcpyyinerjgncx7s2s22s7ea
+$ workito install \
+    --address /ip4/127.0.0.1/tcp/9000/p2p/12D3KooWHUeKgXT4aj8oKvtwovVMki468igSsa5F8izZY3U5UyMD \
+    bafybeia24v4czavtpjv2co3j54o4a5ztduqcpyyinerjgncx7s2s22s7ea
 2024/01/27 15:56:10 INFO node address address=/ip4/127.0.0.1/tcp/9000/p2p/12D3KooWHUeKgXT4aj8oKvtwovVMki468igSsa5F8izZY3U5UyMD
 2024/01/27 15:56:10 INFO libp2p host we use id=12D3KooWFNEE9eo7rSeMPLNvFZuhVJ3HLxeuj255Exrp9tKNKzJ2
 2024/01/27 15:56:10 INFO connected to node
@@ -30,7 +32,14 @@ $ workito install --address /ip4/127.0.0.1/tcp/9000/p2p/12D3KooWHUeKgXT4aj8oKvtw
 ### Execute a Function
 
 ```console
-$ workito --address /ip4/127.0.0.1/tcp/9000/p2p/12D3KooWHUeKgXT4aj8oKvtwovVMki468igSsa5F8izZY3U5UyMD execute --function-id bafybeia24v4czavtpjv2co3j54o4a5ztduqcpyyinerjgncx7s2s22s7ea --method hello-world.wasm --nodes 1 --parameter name=val --env-var NAME=VAL --env-var LEN=45  | jq .| jq
+$ workito execute \
+    --address /ip4/127.0.0.1/tcp/9000/p2p/12D3KooWHUeKgXT4aj8oKvtwovVMki468igSsa5F8izZY3U5UyMD \
+    --function-id bafybeia24v4czavtpjv2co3j54o4a5ztduqcpyyinerjgncx7s2s22s7ea \
+    --method hello-world.wasm \
+    --nodes 1 \
+    --parameter name=val \
+    --env-var NAME=VAL \
+    --env-var LEN=45  | jq .
 2024/01/27 15:57:12 INFO node address address=/ip4/127.0.0.1/tcp/9000/p2p/12D3KooWHUeKgXT4aj8oKvtwovVMki468igSsa5F8izZY3U5UyMD
 2024/01/27 15:57:12 INFO libp2p host we use id=12D3KooWSdpSQwFUvKGUvg67Dze2ayA8HzQ6M4ZJJBviWaHd74ak
 2024/01/27 15:57:12 INFO connected to node
