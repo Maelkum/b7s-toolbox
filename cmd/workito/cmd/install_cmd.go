@@ -88,9 +88,6 @@ func installFunctions(address string, cids []string) error {
 		}
 	}()
 
-	protocolID := stream.Protocol()
-	slog.Info("stream protocol id", "id", protocolID)
-
 	responses := make(chan response.InstallFunction, len(cids))
 	host.SetStreamHandler(blockless.ProtocolID, getReadResponseHandler(responses))
 
