@@ -25,3 +25,5 @@ cmd/pbft-node/pbft-node
 cmd/pbft-client/pbft-client
 /cmd/workito/workito
 exp/libp2pid/libp2pid
+exp/dbwrite/dbwrite
+exp/dbread/dbread
