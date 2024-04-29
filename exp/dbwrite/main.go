@@ -28,7 +28,6 @@ func main() {
 	}
 
 	store := store.New(db, JSONSerializer{})
-	_ = store
 
 	peers := generatePeers(count)
 
@@ -40,6 +39,18 @@ func main() {
 		err = store.SavePeer(p)
 		if err != nil {
 			log.Fatalf("could not save peer: %s", err)
+		}
+	}
+
+	functions := generateFunctions(count)
+	for _, f := range functions {
+
+		data, _ := json.Marshal(f)
+		fmt.Printf("%s\n", data)
+
+		err = store.SaveFunction(f.CID, f)
+		if err != nil {
+			log.Fatalf("could not save function: %s", err)
 		}
 	}
 }
@@ -77,4 +88,20 @@ func generatePeers(count int) []blockless.Peer {
 	}
 
 	return peers
+}
+
+func generateFunctions(count int) []blockless.FunctionRecord {
+
+	functions := make([]blockless.FunctionRecord, count)
+	for i := 0; i < count; i++ {
+
+		fn := blockless.FunctionRecord{
+			CID: fmt.Sprintf("dummy-cid-%v", i),
+			URL: fmt.Sprintf("https://example.com/dummy-url-%v", i),
+		}
+
+		functions[i] = fn
+	}
+
+	return functions
 }
