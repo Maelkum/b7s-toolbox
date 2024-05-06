@@ -47,7 +47,6 @@ func runExecute(cmd *cobra.Command, args []string) {
 	}
 
 	req := request.Execute{
-		Type:      blockless.MessageExecute,
 		RequestID: uuid.New().String(),
 
 		Request: execute.Request{

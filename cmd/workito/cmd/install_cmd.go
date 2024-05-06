@@ -141,13 +141,12 @@ outerLoop:
 }
 
 func manifestURLFromCID(cid string) string {
-	return fmt.Sprintf("https://%s.ipfs.w3s.link/manifest.json", cid)
+	return fmt.Sprintf("https://%s.ipfs.dweb.link/manifest.json", cid)
 }
 
 func sendMessage(stream network.Stream, cid string) error {
 
 	msg := request.InstallFunction{
-		Type:        blockless.MessageInstallFunction,
 		CID:         cid,
 		ManifestURL: manifestURLFromCID(cid),
 	}
