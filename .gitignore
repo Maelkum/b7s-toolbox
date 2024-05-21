@@ -23,7 +23,7 @@ exp/spammer/spammer
 exp/hclogger/hclogger
 cmd/pbft-node/pbft-node
 cmd/pbft-client/pbft-client
-/cmd/workito/workito
+/cmd/workyo/workyo
 exp/libp2pid/libp2pid
 exp/dbwrite/dbwrite
 exp/dbread/dbread

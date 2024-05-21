@@ -4,10 +4,8 @@ go 1.22
 
 toolchain go1.22.2
 
-replace github.com/blocklessnetwork/b7s v0.3.0 => ../b7s
-
 require (
-	github.com/blocklessnetwork/b7s v0.3.0
+	github.com/blocklessnetwork/b7s v0.6.2
 	github.com/cockroachdb/pebble v1.1.0
 	github.com/google/uuid v1.6.0
 	github.com/libp2p/go-libp2p v0.33.2

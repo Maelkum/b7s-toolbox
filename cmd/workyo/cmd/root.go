@@ -11,9 +11,9 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "workito",
-	Short: "Workito is a small CLI tool to send commands to a b7s worker node",
-	Long: `Workito is a small CLI tool to send commands to a b7s worker node.
+	Use:   "workyo",
+	Short: "workyo is a small CLI tool to send commands to a b7s worker node",
+	Long: `workyo is a small CLI tool to send commands to a b7s worker node.
 	
 At the moment it supports instructing the worker node to install or to execute 
 a function. It can be used to issue commands to the worker node without having 

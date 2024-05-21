@@ -1,6 +1,6 @@
-# Workito
+# workyo
 
-Workito is small command-line tool to directly instruct a Blockless Worker node to execute an execution request.
+workyo is small command-line tool to directly instruct a Blockless Worker node to execute an execution request.
 This makes it possible to test stuff by running a headless Worker node.
 It supports sending installation messages to the node, as well as request executions.
 
@@ -18,7 +18,7 @@ The tool does not support some more ellaborate scenarios like roll calls or clus
 ### Install a Function
 
 ```console
-$ workito install \
+$ workyo install \
     --address /ip4/127.0.0.1/tcp/9000/p2p/12D3KooWHUeKgXT4aj8oKvtwovVMki468igSsa5F8izZY3U5UyMD \
     bafybeia24v4czavtpjv2co3j54o4a5ztduqcpyyinerjgncx7s2s22s7ea
 2024/01/27 15:56:10 INFO node address address=/ip4/127.0.0.1/tcp/9000/p2p/12D3KooWHUeKgXT4aj8oKvtwovVMki468igSsa5F8izZY3U5UyMD
@@ -32,7 +32,7 @@ $ workito install \
 ### Execute a Function
 
 ```console
-$ workito execute \
+$ workyo execute \
     --address /ip4/127.0.0.1/tcp/9000/p2p/12D3KooWHUeKgXT4aj8oKvtwovVMki468igSsa5F8izZY3U5UyMD \
     --function-id bafybeia24v4czavtpjv2co3j54o4a5ztduqcpyyinerjgncx7s2s22s7ea \
     --method hello-world.wasm \

@@ -12,8 +12,8 @@ var installCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install a function",
 	Long:  `Instruct the worker node to install the function(s) based on the specified CIDs.`,
-	Example: `  workito install --address <node-multiaddress> <CID>
-  workito install --address <node-multiaddress> <CID1> <CID2> <CID2>`,
+	Example: `  workyo install --address <node-multiaddress> <CID>
+  workyo install --address <node-multiaddress> <CID1> <CID2> <CID2>`,
 	Run: runInstall,
 }
 
