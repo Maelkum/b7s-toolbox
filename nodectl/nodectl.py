@@ -4,21 +4,27 @@ import os
 import subprocess
 import yaml
 import ruamel.yaml
+import argparse
+parser = argparse.ArgumentParser()
 
-usage = """
-nodectl.py <keys|start> [count] - create keys or start nodes
-nodectl.py <stop|help> - stop nodes or show help
-"""
+
+parser.add_argument("cmd", help="Command to run")
+parser.add_argument("-c", "--count", help="Number of nodes to create")
+parser.add_argument("-b", "--bootnode", help="Boot node to connect to")
+
+args = parser.parse_args()
+
 
 nodes_dir = ".b7s_nodes"
 pidfile = ".b7s_node_pids"
 keyforge_executable = "/home/aco/code/blockless/b7s/cmd/keyforge/keyforge"
+node_executable = "/home/aco/code/blockless/b7s/cmd/node/node"
 
 default_cfg = {
     'role': 'worker',
     'log': { 'level': 'info' },
     'worker': {
-        'runtime-path:': '/home/aco/.local/blockless-runtime/bin',
+        'runtime-path': '/home/aco/.local/blockless-runtime/bin',
         'runtime-cli': 'bls-runtime',
     },
     'connectivity': {
@@ -28,32 +34,36 @@ default_cfg = {
     }
 }
 
-
 def create_keys(count):
-    if not os.path.exists(nodes_dir):
-        os.mkdir(nodes_dir)
+    os.makedirs(nodes_dir, exist_ok=True)
 
     for i in range(count):
-        dir = node_path(i)
-        if os.path.exists(dir):
-            continue
-        
-        os.mkdir(dir)
-        subprocess.run([keyforge_executable, "--output", dir])
+        print(f"Creating key for node {i}")
+        create_key(i)
+
+
+def create_key(i):
+    dir = node_path(i)
+    if os.path.exists(dir):
+        return
+    
+    os.mkdir(dir)
+    subprocess.run([keyforge_executable, "--output", dir])
+
 
 def create_configs(count):
-    if not os.path.exists(nodes_dir):
-        os.mkdir(nodes_dir)
+    os.makedirs(nodes_dir, exist_ok=True)
 
     for i in range(count):
         dir = config_path(i)
         if os.path.exists(dir):
             continue
-
+        
+        print(f"Creating config for node {i}")
         create_config(i)
 
 def key_path(i):
-    return node_path(i) + "/key"
+    return node_path(i) + "/priv.bin"
 
 def config_path(i):
     return node_path(i) + "/config.yaml"
@@ -80,26 +90,62 @@ def create_config(i):
         yaml.dump(cfg, f)
 
 
+def start_nodes(count):
+    pf = os.open(pidfile, os.O_CREAT | os.O_WRONLY | os.O_TRUNC)
+    for i in range(count):
+        os.makedirs(node_path(i), exist_ok=True)
+
+        if not os.path.exists(key_path(i)):
+           create_key(i)
+        
+        if not os.path.exists(config_path(i)):
+            create_config(i)
+
+        cmd = [node_executable, "--config", config_path(i)]
+        if args.bootnode:
+            cmd.append("--boot-nodes")
+            cmd.append(args.bootnode)
+
+        path = node_path(i)
+        stderr_path = f"{path}/stderr.log"
+        stdout_path = f"{path}/stdout.log"
+
+        print(f"starting node {i} with command {' '.join(cmd)}")
+        with open(stdout_path, 'w') as stdout_file, open(stderr_path, 'w') as stderr_file:
+            proc = subprocess.Popen(
+                cmd,
+                stdout=stdout_file,
+                stderr=stderr_file
+            )
+
+            pid = proc.pid
+            os.write(pf, (str(pid) + "\n").encode())
+            print("started node " + str(i) + " with pid " + str(pid))
+
+    os.close(pf)
+
+def stop_nodes():
+    pf = os.open(pidfile, os.O_RDONLY)
+    pids = []
+    for line in os.read(pf, os.path.getsize(pidfile)).decode().splitlines():
+        pids.append(int(line))
+    os.close(pf)
+
+    print(f"Stopping {len(pids)} nodes with pids {pids}")
+
+    cmd = ["kill", "-9"] + list(map(str, pids))
+    subprocess.Popen(cmd)
+
 ## main
 
-cmd = sys.argv[1]
 
-if cmd == "keys":
-    count = int(sys.argv[2])
-    create_keys(count)
-elif cmd == "configs":
-    count = int(sys.argv[2])
-    create_configs(count)
-elif cmd == "start":
-    count = int(sys.argv[2])
-    print("start")
-elif cmd == "stop":
-    print("stop")
-elif cmd == "help":
-    print(usage)
+if args.cmd == "keys":
+    create_keys(int(args.count))
+elif args.cmd == "configs":
+    create_configs(int(args.count))
+elif args.cmd == "start":
+    start_nodes(int(args.count))
+elif args.cmd == "stop":
+    stop_nodes()
 else:
-    print("unknown command")
-
-
-print ("done")
-
+    print(parser.format_help)
