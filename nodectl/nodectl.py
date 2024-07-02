@@ -15,8 +15,8 @@ parser.add_argument("-b", "--bootnode", help="Boot node to connect to")
 args = parser.parse_args()
 
 
-nodes_dir = ".b7s_nodes"
-pidfile = ".b7s_node_pids"
+nodes_dir = ".nodes"
+pidfile = ".pids"
 keyforge_executable = "/home/aco/code/blockless/b7s/cmd/keyforge/keyforge"
 node_executable = "/home/aco/code/blockless/b7s/cmd/node/node"
 
