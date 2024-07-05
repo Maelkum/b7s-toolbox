@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("cmd", help="Command to run")
 parser.add_argument("-c", "--count", help="Number of nodes to create")
 parser.add_argument("-b", "--bootnode", help="Boot node to connect to")
+parser.add_argument("-t", "--telemetry", help="Enable telemetry")
 
 args = parser.parse_args()
 
@@ -31,7 +32,16 @@ default_cfg = {
         'address': '127.0.0.1',
         'port': 0,              # set for each node
         'private-key': '',      # set for each node
-    }
+    },
+    'telemetry': {
+        'enable': False,
+        'tracing': {
+            'exporter-batch-timeout': '5s',
+            'grpc': {
+                'endpoint': 'http://localhost:4317/'
+            }
+        }
+    },
 }
 
 def create_keys(count):
@@ -105,6 +115,9 @@ def start_nodes(count):
         if args.bootnode:
             cmd.append("--boot-nodes")
             cmd.append(args.bootnode)
+
+        if args.telemetry:
+            cmd.append("--enable-telemetry")
 
         path = node_path(i)
         stderr_path = f"{path}/stderr.log"
