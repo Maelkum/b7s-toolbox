@@ -12,6 +12,7 @@ parser.add_argument("cmd", help="Command to run")
 parser.add_argument("-c", "--count", help="Number of nodes to create")
 parser.add_argument("-b", "--bootnode", help="Boot node to connect to")
 parser.add_argument("-t", "--telemetry", help="Enable telemetry")
+parser.add_argument("-m", "--must-reach-boot-nodes", help="Must reach boot nodes")
 
 args = parser.parse_args()
 
@@ -38,7 +39,7 @@ default_cfg = {
         'tracing': {
             'exporter-batch-timeout': '5s',
             'grpc': {
-                'endpoint': 'http://localhost:4317/'
+                'endpoint': 'localhost:4317'
             }
         }
     },
@@ -118,6 +119,9 @@ def start_nodes(count):
 
         if args.telemetry:
             cmd.append("--enable-telemetry")
+
+        if args.must_reach_boot_nodes:
+            cmd.append("--must-reach-boot-nodes")
 
         path = node_path(i)
         stderr_path = f"{path}/stderr.log"
