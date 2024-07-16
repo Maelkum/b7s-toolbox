@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	b7shost "github.com/blocklessnetwork/b7s/host"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/host"
 	"golang.org/x/exp/rand"
@@ -58,7 +59,6 @@ func publishMessages(h host.Host, topic *pubsub.Topic) error {
 
 		time.Sleep(publishTimeout)
 	}
-
 }
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -69,4 +69,8 @@ func getRandomString(n int) string {
 		b[i] = letterBytes[rand.Intn(len(letterBytes))]
 	}
 	return string(b)
+}
+
+func publishMessagesb7s(h *b7shost.Host, topic *pubsub.Topic) error {
+	return publishMessages(h.Host, topic)
 }
