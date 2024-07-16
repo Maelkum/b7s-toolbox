@@ -27,4 +27,4 @@ cmd/pbft-client/pbft-client
 exp/libp2pid/libp2pid
 exp/dbwrite/dbwrite
 exp/dbread/dbread
-exp/pubsub/pubsub
+exp/pubsub-writer/pubsub-writer
