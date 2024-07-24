@@ -20,8 +20,6 @@ github.com/benbjohnson/clock v1.3.5/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZx
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
-github.com/blocklessnetwork/b7s v0.3.0 h1:ph42NL0P9eldJ9rw6WebRmg+heUFOiP482ANeZRbdMw=
-github.com/blocklessnetwork/b7s v0.3.0/go.mod h1:VyAOBepT9rN9Y++Yq+X2oHTzJtJuu0FWUK4pNbKxkVw=
 github.com/blocklessnetwork/b7s v0.6.2 h1:8FI0R7enfbGqh4CmBh9IPO5cn0OXbwafw56wCw9GEUA=
 github.com/blocklessnetwork/b7s v0.6.2/go.mod h1:8+NRMfdmR0Y1ThoVf61CKq8vyDg/vbOQnZ5aYlw5U/g=
 github.com/bradfitz/go-smtpd v0.0.0-20170404230938-deb6d6237625/go.mod h1:HYsPBTaaSFSlLx/70C2HPIMNZpVV8+vt/A+FMnYP11g=

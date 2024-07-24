@@ -7,6 +7,7 @@ toolchain go1.22.2
 require (
 	github.com/blocklessnetwork/b7s v0.6.2
 	github.com/cockroachdb/pebble v1.1.0
+	github.com/gogo/protobuf v1.3.3
 	github.com/google/uuid v1.6.0
 	github.com/libp2p/go-libp2p v0.33.2
 	github.com/libp2p/go-libp2p-pubsub v0.10.0
@@ -14,6 +15,7 @@ require (
 	github.com/rs/zerolog v1.31.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
+	golang.org/x/time v0.5.0
 	nhooyr.io/websocket v1.8.10
 )
 
@@ -41,7 +43,6 @@ require (
 	github.com/getsentry/sentry-go v0.27.0 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
-	github.com/gogo/protobuf v1.3.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/gopacket v1.1.19 // indirect
 	github.com/google/pprof v0.0.0-20240409012703-83162a5b38cd // indirect

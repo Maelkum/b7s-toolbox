@@ -3,7 +3,8 @@ package main
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
+	"errors"
+	"io"
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
@@ -20,14 +21,12 @@ func createLibp2pHost(keyfile string) host.Host {
 		log.Fatal().Err(err).Msg("could not read key")
 	}
 
-	addr := fmt.Sprintf("/ip4/0.0.0.0/tcp/0")
-
 	opts := []libp2p.Option{
 		libp2p.DefaultTransports,
 		libp2p.DefaultMuxers,
 		libp2p.DefaultSecurity,
 		libp2p.NATPortMap(),
-		libp2p.ListenAddrStrings(addr),
+		libp2p.ListenAddrStrings("/ip4/0.0.0.0/tcp/0"),
 		libp2p.Identity(key),
 	}
 
@@ -44,7 +43,7 @@ var pongReceiver = func(stream network.Stream) {
 
 	buf := bufio.NewReader(stream)
 	msg, err := buf.ReadBytes('\n')
-	if err != nil {
+	if err != nil && !errors.Is(err, io.EOF) {
 		stream.Reset()
 		log.Error().Err(err).Msg("could not read message")
 		return

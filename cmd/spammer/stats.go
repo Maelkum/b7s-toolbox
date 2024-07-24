@@ -18,4 +18,8 @@ type requestStat struct {
 	respondts time.Time
 }
 
-func processPong(response.Pong) {}
+func processPong(pong response.Pong) {
+	log.Debug().Uint64("id", pong.ID).Msg("processing pong")
+}
+
+func printStats() {}
