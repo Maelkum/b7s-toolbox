@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"sync/atomic"
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
@@ -38,24 +39,42 @@ func createLibp2pHost(keyfile string) host.Host {
 	return host
 }
 
-var pongReceiver = func(stream network.Stream) {
-	defer stream.Close()
+func getPongReceiver(target uint64, done chan struct{}) network.StreamHandler {
 
-	buf := bufio.NewReader(stream)
-	msg, err := buf.ReadBytes('\n')
-	if err != nil && !errors.Is(err, io.EOF) {
-		stream.Reset()
-		log.Error().Err(err).Msg("could not read message")
-		return
+	var processed atomic.Uint64
+
+	return func(stream network.Stream) {
+		defer func() {
+			err := stream.Close()
+			if err != nil {
+				log.Error().Err(err).Msg("stream close failed")
+			}
+		}()
+		defer func() {
+			processed.Add(1)
+			if processed.Load() >= target {
+				log.Info().Uint64("count", processed.Load()).Msg("processed specified number of messages")
+				close(done)
+			}
+		}()
+
+		buf := bufio.NewReader(stream)
+		msg, err := buf.ReadBytes('\n')
+		if err != nil && !errors.Is(err, io.EOF) {
+			stream.Reset()
+			log.Error().Err(err).Msg("could not read message")
+			return
+		}
+
+		var pong response.Pong
+		err = json.Unmarshal(msg, &pong)
+		if err != nil {
+			stream.Reset()
+			log.Error().Err(err).Msg("could not process response")
+			return
+		}
+
+		processPong(pong)
 	}
 
-	var pong response.Pong
-	err = json.Unmarshal(msg, &pong)
-	if err != nil {
-		stream.Reset()
-		log.Error().Err(err).Msg("could not process response")
-		return
-	}
-
-	processPong(pong)
 }
