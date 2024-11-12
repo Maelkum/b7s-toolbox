@@ -30,7 +30,7 @@ func main() {
 		os.Exit(1)
 	}()
 
-	for i := uint(0); i < flagCount; i++ {
+	for i := uint(0); i < flagCount-1; i++ {
 		fmt.Printf("stdout #%v\n", i)
 		log.Printf("stderr #%v\n", i)
 
