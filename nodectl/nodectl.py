@@ -2,7 +2,6 @@
 import sys
 import os
 import subprocess
-import yaml
 import ruamel.yaml
 import argparse
 parser = argparse.ArgumentParser()
@@ -19,15 +18,14 @@ args = parser.parse_args()
 
 nodes_dir = ".nodes"
 pidfile = ".pids"
-keyforge_executable = "/home/aco/code/blockless/b7s/cmd/keyforge/keyforge"
-node_executable = "/home/aco/code/blockless/b7s/cmd/node/node"
+keyforge_executable = "/home/aco/code/bless/b7s/cmd/keyforge/keyforge"
+node_executable = "/home/aco/code/bless/b7s/cmd/node/node"
 
 default_cfg = {
     'role': 'worker',
-    'log': { 'level': 'info' },
+    'log': { 'level': 'trace' },
     'worker': {
-        'runtime-path': '/home/aco/.local/blockless-runtime/bin',
-        'runtime-cli': 'bls-runtime',
+        'runtime-path': '/home/aco/.local/bless-runtime/bin/bls-runtime',
     },
     'connectivity': {
         'address': '127.0.0.1',
