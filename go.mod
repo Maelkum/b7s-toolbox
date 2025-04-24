@@ -6,7 +6,6 @@ toolchain go1.23.5
 
 require (
 	github.com/a-h/templ v0.3.857
-	github.com/blocklessnetwork/b7s v0.7.0
 	github.com/cockroachdb/pebble v1.1.5
 	github.com/gogo/protobuf v1.3.3
 	github.com/google/uuid v1.6.0
@@ -21,6 +20,7 @@ require (
 
 require (
 	github.com/DataDog/zstd v1.5.7 // indirect
+	github.com/Maelkum/b7s v0.0.0-20250424095817-ba99a7ca5377 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect

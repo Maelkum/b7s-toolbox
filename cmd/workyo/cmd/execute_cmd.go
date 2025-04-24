@@ -19,10 +19,10 @@ import (
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
 
-	"github.com/blocklessnetwork/b7s/models/blockless"
-	"github.com/blocklessnetwork/b7s/models/execute"
-	"github.com/blocklessnetwork/b7s/models/request"
-	"github.com/blocklessnetwork/b7s/models/response"
+	"github.com/Maelkum/b7s/models/bls"
+	"github.com/Maelkum/b7s/models/execute"
+	"github.com/Maelkum/b7s/models/request"
+	"github.com/Maelkum/b7s/models/response"
 )
 
 func runExecute(cmd *cobra.Command, args []string) {
@@ -156,7 +156,7 @@ func executeFunction(address string, req request.Execute) (response.Execute, err
 
 	slog.Info("connected to node")
 
-	stream, err := host.NewStream(context.Background(), addrInfo.ID, blockless.ProtocolID)
+	stream, err := host.NewStream(context.Background(), addrInfo.ID, bls.ProtocolID)
 	if err != nil {
 		return response.Execute{}, fmt.Errorf("could not open stream to node: %w", err)
 	}
@@ -168,7 +168,7 @@ func executeFunction(address string, req request.Execute) (response.Execute, err
 	}()
 
 	responseCh := make(chan response.Execute, 1)
-	host.SetStreamHandler(blockless.ProtocolID, getReadExecuteResponseHandler(responseCh))
+	host.SetStreamHandler(bls.ProtocolID, getReadExecuteResponseHandler(responseCh))
 
 	err = sendExecuteMessage(stream, req)
 	if err != nil {

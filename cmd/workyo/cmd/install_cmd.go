@@ -18,9 +18,9 @@ import (
 
 	"github.com/multiformats/go-multiaddr"
 
-	"github.com/blocklessnetwork/b7s/models/blockless"
-	"github.com/blocklessnetwork/b7s/models/request"
-	"github.com/blocklessnetwork/b7s/models/response"
+	"github.com/Maelkum/b7s/models/bls"
+	"github.com/Maelkum/b7s/models/request"
+	"github.com/Maelkum/b7s/models/response"
 )
 
 func runInstall(cmd *cobra.Command, args []string) {
@@ -77,7 +77,7 @@ func installFunctions(address string, cids []string) error {
 
 	slog.Info("connected to node")
 
-	stream, err := host.NewStream(context.Background(), addrInfo.ID, blockless.ProtocolID)
+	stream, err := host.NewStream(context.Background(), addrInfo.ID, bls.ProtocolID)
 	if err != nil {
 		return fmt.Errorf("could not open stream to node: %w", err)
 	}
@@ -89,7 +89,7 @@ func installFunctions(address string, cids []string) error {
 	}()
 
 	responses := make(chan response.InstallFunction, len(cids))
-	host.SetStreamHandler(blockless.ProtocolID, getReadResponseHandler(responses))
+	host.SetStreamHandler(bls.ProtocolID, getReadResponseHandler(responses))
 
 	for _, cid := range cids {
 

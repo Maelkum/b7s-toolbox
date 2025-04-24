@@ -8,9 +8,9 @@ import (
 	"github.com/cockroachdb/pebble"
 	"github.com/rs/zerolog"
 
-	"github.com/blocklessnetwork/b7s/fstore"
-	"github.com/blocklessnetwork/b7s/store"
-	"github.com/blocklessnetwork/b7s/store/codec"
+	"github.com/Maelkum/b7s/fstore"
+	"github.com/Maelkum/b7s/store"
+	"github.com/Maelkum/b7s/store/codec"
 )
 
 func main() {
