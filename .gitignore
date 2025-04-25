@@ -27,3 +27,6 @@ cmd/pbft-client/pbft-client
 exp/libp2pid/libp2pid
 exp/dbwrite/dbwrite
 exp/dbread/dbread
+b7s-messenger/b7s-messenger
+
+

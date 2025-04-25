@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss/v2"
 )
 
 type model struct {
@@ -43,6 +44,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			delete(m.selected, m.cursor)
 		} else {
 			m.selected[m.cursor] = struct{}{}
+
+			for k := range m.selected {
+				if k != m.cursor {
+					delete(m.selected, k)
+				}
+			}
 		}
 	}
 
@@ -54,6 +61,9 @@ func (m model) View() string {
 	s := "Choose message to send\n"
 
 	for i, choice := range m.choices {
+
+		style := lipgloss.NewStyle()
+
 		cursor := " "
 		if m.cursor == i {
 			cursor = ">"
@@ -63,10 +73,11 @@ func (m model) View() string {
 		_, ok := m.selected[i]
 		if ok {
 			checked = "x"
+			style = style.Foreground(lipgloss.Green)
 		}
 
-		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
-
+		s += style.Render(fmt.Sprintf("%s [%s] %s", cursor, checked, choice))
+		s += "\n"
 	}
 
 	s += "\nPress q to quit.\n"
