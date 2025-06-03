@@ -30,3 +30,10 @@ exp/dbread/dbread
 b7s-messenger/b7s-messenger
 
 
+nodectl/.nodes
+nodectl/.pids
+nodectl/bin
+nodectl/lib
+nodectl/lib64
+nodectl/pyvenv.cfg
+exp/counter/counter.wasm

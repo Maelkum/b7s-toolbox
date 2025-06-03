@@ -45,6 +45,8 @@ github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
+github.com/blessnetwork/b7s v0.7.1-0.20250530122157-0263b74c68d5 h1:GblCzkMe6J+G4gAYlpqCpfuZ0ThtA3IAsQPfIqg47y0=
+github.com/blessnetwork/b7s v0.7.1-0.20250530122157-0263b74c68d5/go.mod h1:VP7of0PTYF+PaHL05by04TOIxQnSwOWRMtCbrbg7X80=
 github.com/blocklessnetwork/b7s v0.6.2 h1:8FI0R7enfbGqh4CmBh9IPO5cn0OXbwafw56wCw9GEUA=
 github.com/blocklessnetwork/b7s v0.6.2/go.mod h1:8+NRMfdmR0Y1ThoVf61CKq8vyDg/vbOQnZ5aYlw5U/g=
 github.com/blocklessnetwork/b7s v0.7.0 h1:eNjecHoHrD5y6aJ6EOwu3K/06eN9phgMoMrTgprQzyY=

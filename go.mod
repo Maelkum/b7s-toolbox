@@ -27,6 +27,7 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/benbjohnson/clock v1.3.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/blessnetwork/b7s v0.7.1-0.20250530122157-0263b74c68d5 // indirect
 	github.com/blocklessnetwork/b7s-attributes v0.0.0 // indirect
 	github.com/boltdb/bolt v1.3.1 // indirect
 	github.com/cavaliergopher/grab/v3 v3.0.1 // indirect

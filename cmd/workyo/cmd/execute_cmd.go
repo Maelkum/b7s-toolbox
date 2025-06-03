@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/spf13/cobra"
 
@@ -47,8 +46,6 @@ func runExecute(cmd *cobra.Command, args []string) {
 	}
 
 	req := request.Execute{
-		RequestID: uuid.New().String(),
-
 		Request: execute.Request{
 			FunctionID: flags.FunctionID,
 			Method:     flags.Method,
