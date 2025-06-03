@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -59,11 +60,12 @@ func run() error {
 	scfg := spammer.Config{
 		Count:     cfg.count,
 		Frequency: cfg.frequency,
+		Target:    target,
 	}
 
-	spammer := spammer.New(scfg, host, target)
+	spammer := spammer.New(scfg, host)
 
-	err = spammer.Run()
+	err = spammer.Run(context.TODO())
 	if err != nil {
 		return fmt.Errorf("could not run spammer: %w", err)
 	}
