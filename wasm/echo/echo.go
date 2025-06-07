@@ -12,5 +12,5 @@ func main() {
 		out = append(out, fmt.Sprint(arg))
 	}
 
-	fmt.Printf("%s\n", strings.Join(out, " "))
+	fmt.Printf("%s", strings.Join(out, " "))
 }

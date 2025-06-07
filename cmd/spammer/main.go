@@ -24,6 +24,8 @@ type config struct {
 	frequency uint
 }
 
+// TODO: Remove the configs from the CLI flags perhaps.
+
 func main() {
 	err := run()
 	if err != nil {
