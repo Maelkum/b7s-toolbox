@@ -7,11 +7,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"log/slog"
+	"sync"
 	"time"
 
 	"github.com/Maelkum/b7s/models/bls"
+	"github.com/blessnetwork/b7s/models/response"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -50,27 +51,26 @@ func (s *Spammer) Run(ctx context.Context) error {
 		return fmt.Errorf("could not connect to the target: %w", err)
 	}
 
-	// TODO: Establish stat holder.
-
-	// TODO: Prepare a function that will return input data.
-
-	s.libp2p.SetStreamHandler(bls.ProtocolID, processResponse)
-
-	for i, test := range getTestProfiles() {
+	for profile_no, test := range getTestProfiles() {
 
 		slog.Debug("running test profile",
-			"i", i,
+			"i", profile_no,
 			"executions", test.executions,
 			"frequency", test.frequency,
 		)
 
 		tctx, cancel := context.WithCancel(ctx)
+		defer cancel()
 		limiter := rate.NewLimiter(rate.Limit(test.frequency), 1)
 
-		payload := getMessagePayload()
+		var (
+			stats sync.Map
+			wg    sync.WaitGroup
+		)
+		s.libp2p.SetStreamHandler(bls.ProtocolID, responseHandler(&wg, &stats))
 
 		// Consume responses in a separate goroutine.
-		for range test.executions {
+		for i := range test.executions {
 
 			// Test goroutine.
 			go func(ctx context.Context) {
@@ -79,17 +79,45 @@ func (s *Spammer) Run(ctx context.Context) error {
 					cancel()
 				}
 
+				key := executionMapKey(i, test.executions, test.frequency)
+				payload := getMessagePayload(key)
+
+				// Record timestamp.
+				ts := time.Now()
+
+				stats.Store(key, runResponse{
+					start: ts,
+				})
+
 				err = s.sendMessage(tctx, payload)
 				if err != nil {
 					// TODO: Perhaps continue with the test but mark this as a failure.
 					panic("could not send message")
 				}
 
-			}(ctx)
-		}
-	}
+				wg.Add(1)
 
-	time.Sleep(5 * time.Second)
+			}(tctx)
+		}
+
+		time.Sleep(5 * time.Second)
+
+		done := make(chan struct{}, 1)
+
+		go func() {
+			wg.Wait()
+			close(done)
+		}()
+
+		select {
+		case <-ctx.Done():
+		case <-done:
+		}
+
+		slog.Info("done waiting for all responses")
+
+		processResults(&stats, detailedTable)
+	}
 
 	return nil
 }
@@ -129,11 +157,7 @@ func (s *Spammer) sendMessage(ctx context.Context, payload []byte) error {
 		_ = stream.Close()
 	}()
 
-	// err = stream.SetProtocol(bls.ProtocolID)
-	// if err != nil {
-	// 	stream.Reset()
-	// 	return fmt.Errorf("could not set protocol: %w", err)
-	// }
+	// TODO: Figure out why stream.SetProtocol(bls.ProtocolID) does not work
 
 	_, err = stream.Write(payload)
 	if err != nil {
@@ -144,44 +168,46 @@ func (s *Spammer) sendMessage(ctx context.Context, payload []byte) error {
 	return nil
 }
 
-func getMessagePayload() []byte {
+func responseHandler(wg *sync.WaitGroup, stats *sync.Map) network.StreamHandler {
 
-	rec := Execute{
-		Request: Request{
-			FunctionID: testFunction.cid,
-			Method:     testFunction.method,
-			Arguments: []string{
-				fmt.Sprint(time.Now().Unix()),
-			},
-			Config: RequestConfig{
-				NodeCount: 1,
-			},
-		},
+	return func(stream network.Stream) {
+		defer stream.Close()
+		defer wg.Done()
+
+		// Record timestamp early on.
+		ts := time.Now()
+
+		buf := bufio.NewReader(stream)
+		payload, err := buf.ReadBytes('\n')
+		if err != nil && !errors.Is(err, io.EOF) {
+			stream.Reset()
+			return
+		}
+
+		var response response.Execute
+		err = json.Unmarshal(payload, &response)
+		if err != nil {
+			stream.Reset()
+			return
+		}
+
+		for peer, res := range response.Results {
+
+			// We expect a single result.
+			slog.Debug("processing execution response",
+				"peer", peer.String(),
+				"code", res.Code.String())
+
+			out := res.Result.Result.Stdout
+			s, _ := stats.Load(out)
+			stat := s.(runResponse)
+
+			stat.end = ts
+			stat.success = res.Result.Result.ExitCode == 0
+
+			stats.Store(out, stat)
+
+			break
+		}
 	}
-
-	data, err := json.Marshal(rec)
-	if err != nil {
-		panic("could not marshal message")
-	}
-
-	data = append(data, '\n')
-
-	log.Printf("### payload: %s", data)
-
-	return data
-}
-
-func processResponse(stream network.Stream) {
-	defer stream.Close()
-
-	buf := bufio.NewReader(stream)
-	payload, err := buf.ReadBytes('\n')
-	if err != nil && !errors.Is(err, io.EOF) {
-		stream.Reset()
-		return
-	}
-
-	fmt.Printf("%s\n", payload)
-
-	return
 }

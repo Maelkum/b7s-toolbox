@@ -7,7 +7,7 @@ type testConfig struct {
 
 // TODO: Update these.
 var testExecutions = []uint{
-	3,
+	100,
 	// 1_000,
 	// 10_000,
 	// 100_000,

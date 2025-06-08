@@ -42,8 +42,8 @@ func run() error {
 	pflag.StringVarP(&cfg.node, "node", "n", "", "multiaddress of the node to connect to")
 	pflag.StringVarP(&cfg.key, "key", "k", "", "path to the private key to use to determine identity")
 
-	pflag.Uint64VarP(&cfg.count, "count", "c", 1, "how many requests to send")
-	pflag.UintVarP(&cfg.frequency, "frequency", "f", 10, "how many requests per second should we send")
+	// pflag.Uint64VarP(&cfg.count, "count", "c", 1, "how many requests to send")
+	// pflag.UintVarP(&cfg.frequency, "frequency", "f", 10, "how many requests per second should we send")
 
 	pflag.Parse()
 
