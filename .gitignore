@@ -38,3 +38,4 @@ nodectl/lib64
 nodectl/pyvenv.cfg
 exp/counter/counter.wasm
 cmd/spammer/spammer
+cmd/spammer/spammer_*.log

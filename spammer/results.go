@@ -63,7 +63,7 @@ func processResults(stats *sync.Map, opts ...tableOption) {
 			ok++
 		}
 
-		slog.Debug("processing result",
+		slog.Debug("processing stat",
 			"key", key,
 		)
 

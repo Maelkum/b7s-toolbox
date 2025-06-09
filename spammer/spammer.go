@@ -59,24 +59,35 @@ func (s *Spammer) Run(ctx context.Context) error {
 			"frequency", test.frequency,
 		)
 
+		logfile := mustCreateFile(test)
+		defer logfile.Close()
+
+		initLogger(logfile)
+
 		tctx, cancel := context.WithCancel(ctx)
 		defer cancel()
 		limiter := rate.NewLimiter(rate.Limit(test.frequency), 1)
 
 		var (
-			stats sync.Map
-			wg    sync.WaitGroup
+			stats  sync.Map
+			wg     sync.WaitGroup
+			fireWG sync.WaitGroup
 		)
+
 		s.libp2p.SetStreamHandler(bls.ProtocolID, responseHandler(&wg, &stats))
+
+		fireWG.Add(int(test.executions))
 
 		// Consume responses in a separate goroutine.
 		for i := range test.executions {
 
 			// Test goroutine.
 			go func(ctx context.Context) {
+				defer fireWG.Done()
+
 				err := limiter.Wait(ctx)
 				if err != nil {
-					cancel()
+					panic("could not wait on limiter slot")
 				}
 
 				key := executionMapKey(i, test.executions, test.frequency)
@@ -97,10 +108,13 @@ func (s *Spammer) Run(ctx context.Context) error {
 
 				wg.Add(1)
 
+				slog.Debug("sent execution request",
+					"key", key)
+
 			}(tctx)
 		}
 
-		time.Sleep(5 * time.Second)
+		fireWG.Wait()
 
 		done := make(chan struct{}, 1)
 
@@ -111,10 +125,33 @@ func (s *Spammer) Run(ctx context.Context) error {
 
 		select {
 		case <-ctx.Done():
+			slog.Info("context is done")
 		case <-done:
+			slog.Info("done waiting")
 		}
 
 		slog.Info("done waiting for all responses")
+
+		var keys []string
+		stats.Range(func(k, v any) bool {
+			keys = append(keys, k.(string))
+			return true
+		})
+
+		if uint(len(keys)) != test.executions {
+			slog.Warn("not all executions accounted for",
+				"want", test.executions,
+				"got", len(keys),
+			)
+			for i, key := range keys {
+				slog.Debug("key accounted for",
+					"i", i,
+					"key", key,
+				)
+			}
+
+			return fmt.Errorf("not all execution responses collected: %w", err)
+		}
 
 		processResults(&stats, detailedTable)
 	}
@@ -180,6 +217,7 @@ func responseHandler(wg *sync.WaitGroup, stats *sync.Map) network.StreamHandler 
 		buf := bufio.NewReader(stream)
 		payload, err := buf.ReadBytes('\n')
 		if err != nil && !errors.Is(err, io.EOF) {
+			slog.Error("could not read response", "err", err)
 			stream.Reset()
 			return
 		}
@@ -187,18 +225,22 @@ func responseHandler(wg *sync.WaitGroup, stats *sync.Map) network.StreamHandler 
 		var response response.Execute
 		err = json.Unmarshal(payload, &response)
 		if err != nil {
+			slog.Error("could not unmarshal response", "err", err)
 			stream.Reset()
 			return
 		}
 
 		for peer, res := range response.Results {
 
+			out := res.Result.Result.Stdout
+
 			// We expect a single result.
 			slog.Debug("processing execution response",
 				"peer", peer.String(),
-				"code", res.Code.String())
+				"out", out,
+				"exit_code", res.Result.Result.ExitCode,
+			)
 
-			out := res.Result.Result.Stdout
 			s, _ := stats.Load(out)
 			stat := s.(runResponse)
 

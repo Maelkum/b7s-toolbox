@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 
 	"github.com/Maelkum/b7s-toolbox/spammer"
@@ -44,6 +45,8 @@ func run() error {
 
 	// pflag.Uint64VarP(&cfg.count, "count", "c", 1, "how many requests to send")
 	// pflag.UintVarP(&cfg.frequency, "frequency", "f", 10, "how many requests per second should we send")
+
+	slog.SetLogLoggerLevel(slog.LevelDebug)
 
 	pflag.Parse()
 
