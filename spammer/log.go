@@ -1,12 +1,19 @@
 package spammer
 
 import (
+	"cmp"
 	"fmt"
 	"io"
 	"log/slog"
 	"os"
 	"time"
 )
+
+var activeSublogger *slog.Logger
+
+func log() *slog.Logger {
+	return cmp.Or(activeSublogger, slog.Default())
+}
 
 func defaultPrefix() string {
 
@@ -33,7 +40,7 @@ func mustCreateOutputFile(cfg testConfig) io.WriteCloser {
 		panic("could not create output file")
 	}
 
-	slog.Debug("creating output file",
+	log().Debug("creating output file",
 		"name", name,
 		"executions", cfg.executions,
 		"frequency", cfg.frequency)
@@ -49,7 +56,7 @@ func createLogFile(cfg testConfig) (io.WriteCloser, error) {
 		return nil, fmt.Errorf("could not create log file: %w", err)
 	}
 
-	slog.Debug("creating log file",
+	log().Debug("creating log file",
 		"name", name,
 		"executions", cfg.executions,
 		"frequency", cfg.frequency)
@@ -57,9 +64,10 @@ func createLogFile(cfg testConfig) (io.WriteCloser, error) {
 	return f, nil
 }
 
-// NOTE: Using default logger but I don't care.
-func initLogger(w io.WriteCloser) {
-	slog.SetDefault(
-		slog.New(slog.NewTextHandler(w, &slog.HandlerOptions{Level: slog.LevelDebug})),
-	)
+func initActiveSublogger(w io.WriteCloser) {
+	activeSublogger = slog.New(slog.NewTextHandler(w, &slog.HandlerOptions{Level: slog.LevelDebug}))
+}
+
+func deactivateSublogger() {
+	activeSublogger = nil
 }

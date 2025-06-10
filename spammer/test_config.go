@@ -5,18 +5,12 @@ type testConfig struct {
 	frequency  uint
 }
 
-// TODO: Update these.
-var testExecutions = []uint{
-	100,
-	// 1_000,
-	// 10_000,
-	// 100_000,
-}
-
-var testFrequencies = []uint{
-	10,
-	// 100,
-	// 1000,
+var testProfiles = []testConfig{
+	// executions, frequency (requests per second)
+	{1000, 10},
+	{1000, 100},
+	{1000, 200},
+	// {2_000, 1000},
 }
 
 var testFunction = struct {
@@ -29,18 +23,5 @@ var testFunction = struct {
 
 func getTestProfiles() []testConfig {
 
-	var cfgs []testConfig
-
-	for _, ex := range testExecutions {
-		for _, f := range testFrequencies {
-
-			cfgs = append(cfgs,
-				testConfig{
-					executions: ex,
-					frequency:  f,
-				})
-		}
-	}
-
-	return cfgs
+	return testProfiles
 }

@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"sync"
 	"time"
 
@@ -53,7 +52,7 @@ func (s *Spammer) Run(ctx context.Context) error {
 
 	for profile_no, test := range getTestProfiles() {
 
-		slog.Debug("running test profile",
+		log().Debug("running test profile",
 			"i", profile_no,
 			"executions", test.executions,
 			"frequency", test.frequency,
@@ -62,9 +61,12 @@ func (s *Spammer) Run(ctx context.Context) error {
 		logfile := mustCreateLogFile(test)
 		defer logfile.Close()
 
-		initLogger(logfile)
+		initActiveSublogger(logfile)
 
-		tctx, cancel := context.WithCancel(ctx)
+		// TODO: Hardcoded limit for each individual execution.
+		const testTimeout = 5 * time.Minute
+
+		tctx, cancel := context.WithTimeout(ctx, testTimeout)
 		defer cancel()
 		limiter := rate.NewLimiter(rate.Limit(test.frequency), 1)
 
@@ -87,7 +89,7 @@ func (s *Spammer) Run(ctx context.Context) error {
 
 				err := limiter.Wait(ctx)
 				if err != nil {
-					panic("could not wait on limiter slot")
+					panic("could not wait on limiter slot: " + err.Error())
 				}
 
 				key := executionMapKey(i, test.executions, test.frequency)
@@ -103,12 +105,12 @@ func (s *Spammer) Run(ctx context.Context) error {
 				err = s.sendMessage(tctx, payload)
 				if err != nil {
 					// TODO: Perhaps continue with the test but mark this as a failure.
-					panic("could not send message")
+					panic("could not send message" + err.Error())
 				}
 
 				wg.Add(1)
 
-				slog.Debug("sent execution request",
+				log().Debug("sent execution request",
 					"key", key)
 
 			}(tctx)
@@ -125,12 +127,12 @@ func (s *Spammer) Run(ctx context.Context) error {
 
 		select {
 		case <-ctx.Done():
-			slog.Info("context is done")
+			log().Info("context is done")
 		case <-done:
-			slog.Info("done waiting")
+			log().Info("done waiting")
 		}
 
-		slog.Info("done waiting for all responses")
+		log().Info("done waiting for all responses")
 
 		var keys []string
 		stats.Range(func(k, v any) bool {
@@ -139,12 +141,12 @@ func (s *Spammer) Run(ctx context.Context) error {
 		})
 
 		if uint(len(keys)) != test.executions {
-			slog.Warn("not all executions accounted for",
+			log().Warn("not all executions accounted for",
 				"want", test.executions,
 				"got", len(keys),
 			)
 			for i, key := range keys {
-				slog.Debug("key accounted for",
+				log().Debug("key accounted for",
 					"i", i,
 					"key", key,
 				)
@@ -154,7 +156,13 @@ func (s *Spammer) Run(ctx context.Context) error {
 		}
 
 		processResults(&stats, mustCreateOutputFile(test), detailedTable)
+
+		deactivateSublogger()
+
+		log().Info("completed test profile")
 	}
+
+	log().Info("completed all profiles")
 
 	return nil
 }
@@ -169,7 +177,7 @@ func (s *Spammer) connect(ctx context.Context) error {
 
 	s.targetID = id
 
-	slog.Debug("parsed target address", "addr", target.String(), "id", id)
+	log().Debug("parsed target address", "addr", target.String(), "id", id)
 
 	s.libp2p.Peerstore().AddAddr(id, target, 365*24*time.Hour)
 
@@ -217,7 +225,7 @@ func responseHandler(wg *sync.WaitGroup, stats *sync.Map) network.StreamHandler 
 		buf := bufio.NewReader(stream)
 		payload, err := buf.ReadBytes('\n')
 		if err != nil && !errors.Is(err, io.EOF) {
-			slog.Error("could not read response", "err", err)
+			log().Error("could not read response", "err", err)
 			stream.Reset()
 			return
 		}
@@ -225,7 +233,7 @@ func responseHandler(wg *sync.WaitGroup, stats *sync.Map) network.StreamHandler 
 		var response response.Execute
 		err = json.Unmarshal(payload, &response)
 		if err != nil {
-			slog.Error("could not unmarshal response", "err", err)
+			log().Error("could not unmarshal response", "err", err)
 			stream.Reset()
 			return
 		}
@@ -235,7 +243,7 @@ func responseHandler(wg *sync.WaitGroup, stats *sync.Map) network.StreamHandler 
 			out := res.Result.Result.Stdout
 
 			// We expect a single result.
-			slog.Debug("processing execution response",
+			log().Debug("processing execution response",
 				"peer", peer.String(),
 				"out", out,
 				"exit_code", res.Result.Result.ExitCode,

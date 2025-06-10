@@ -2,7 +2,6 @@ package spammer
 
 import (
 	"io"
-	"log/slog"
 	"sync"
 	"time"
 
@@ -72,7 +71,7 @@ func processResults(stats *sync.Map, out io.WriteCloser, opts ...tableOption) {
 			totalTimeForSuccessfulExecutions += duration
 		}
 
-		slog.Debug("processing stat",
+		log().Debug("processing stat",
 			"key", key,
 		)
 
@@ -99,8 +98,17 @@ func processResults(stats *sync.Map, out io.WriteCloser, opts ...tableOption) {
 		},
 	)
 
-	tpe := time.Duration(int64(totalTime) / int64(total))
-	tpse := time.Duration(int64(totalTimeForSuccessfulExecutions) / int64(ok))
+	var (
+		tpe  string = "N/A" // time per execution
+		tpse string = "N/A" // time per successful excution
+	)
+	if total > 0 {
+		tpe = time.Duration(int64(totalTime) / int64(total)).String()
+	}
+
+	if ok > 0 {
+		tpse = time.Duration(int64(totalTimeForSuccessfulExecutions) / int64(ok)).String()
+	}
 
 	t.AppendSeparator()
 	t.AppendRow(table.Row{
@@ -113,13 +121,13 @@ func processResults(stats *sync.Map, out io.WriteCloser, opts ...tableOption) {
 		"time", totalTime.String(),
 	})
 	t.AppendRow(table.Row{
-		"time per execution", tpe.String(),
+		"time per execution", tpe,
 	})
 	t.AppendRow(table.Row{
 		"time for successful executions", totalTimeForSuccessfulExecutions.String(),
 	})
 	t.AppendRow(table.Row{
-		"time per successful executions", tpse.String(),
+		"time per successful executions", tpse,
 	})
 
 	t.Render()
