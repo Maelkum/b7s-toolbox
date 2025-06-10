@@ -1,8 +1,8 @@
 package spammer
 
 import (
+	"io"
 	"log/slog"
-	"os"
 	"sync"
 	"time"
 
@@ -31,7 +31,8 @@ func detailedTable(cfg *outputConfig) {
 	cfg.detailed = true
 }
 
-func processResults(stats *sync.Map, opts ...tableOption) {
+func processResults(stats *sync.Map, out io.WriteCloser, opts ...tableOption) {
+	defer out.Close()
 
 	cfg := outputConfig{
 		detailed:   false,
@@ -41,11 +42,15 @@ func processResults(stats *sync.Map, opts ...tableOption) {
 		opt(&cfg)
 	}
 
-	total := 0
-	ok := 0
+	var (
+		total                            = 0
+		ok                               = 0
+		totalTime                        time.Duration
+		totalTimeForSuccessfulExecutions time.Duration
+	)
 
 	t := table.NewWriter()
-	t.SetOutputMirror(os.Stdout)
+	t.SetOutputMirror(out)
 
 	if cfg.detailed {
 		// Table for detailed output.
@@ -58,9 +63,13 @@ func processResults(stats *sync.Map, opts ...tableOption) {
 		key := k.(string)
 		val := v.(runResponse)
 
+		duration := val.end.Sub(val.start)
+
 		total++
+		totalTime += duration
 		if val.success {
 			ok++
+			totalTimeForSuccessfulExecutions += duration
 		}
 
 		slog.Debug("processing stat",
@@ -69,7 +78,7 @@ func processResults(stats *sync.Map, opts ...tableOption) {
 
 		if cfg.detailed {
 			t.AppendRow(table.Row{
-				key, val.start.Format(cfg.timeFormat), val.end.Format(cfg.timeFormat), val.end.Sub(val.start), val.success,
+				key, val.start.Format(cfg.timeFormat), val.end.Format(cfg.timeFormat), duration, val.success,
 			})
 		}
 
@@ -83,16 +92,35 @@ func processResults(stats *sync.Map, opts ...tableOption) {
 
 	// Rest table for the global summary
 	t = table.NewWriter()
-	t.SetOutputMirror(os.Stdout)
+	t.SetOutputMirror(out)
 	t.AppendHeader(
 		table.Row{
 			"Metric", "Count",
 		},
 	)
 
+	tpe := time.Duration(int64(totalTime) / int64(total))
+	tpse := time.Duration(int64(totalTimeForSuccessfulExecutions) / int64(ok))
+
 	t.AppendSeparator()
-	t.AppendRow(table.Row{"total", total})
-	t.AppendRow(table.Row{"success", ok})
+	t.AppendRow(table.Row{
+		"total", total,
+	})
+	t.AppendRow(table.Row{
+		"success", ok,
+	})
+	t.AppendRow(table.Row{
+		"time", totalTime.String(),
+	})
+	t.AppendRow(table.Row{
+		"time per execution", tpe.String(),
+	})
+	t.AppendRow(table.Row{
+		"time for successful executions", totalTimeForSuccessfulExecutions.String(),
+	})
+	t.AppendRow(table.Row{
+		"time per successful executions", tpse.String(),
+	})
 
 	t.Render()
 }

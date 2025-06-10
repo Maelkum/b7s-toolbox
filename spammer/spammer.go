@@ -59,7 +59,7 @@ func (s *Spammer) Run(ctx context.Context) error {
 			"frequency", test.frequency,
 		)
 
-		logfile := mustCreateFile(test)
+		logfile := mustCreateLogFile(test)
 		defer logfile.Close()
 
 		initLogger(logfile)
@@ -153,7 +153,7 @@ func (s *Spammer) Run(ctx context.Context) error {
 			return fmt.Errorf("not all execution responses collected: %w", err)
 		}
 
-		processResults(&stats, detailedTable)
+		processResults(&stats, mustCreateOutputFile(test), detailedTable)
 	}
 
 	return nil
