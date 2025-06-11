@@ -30,7 +30,13 @@ func detailedTable(cfg *outputConfig) {
 	cfg.detailed = true
 }
 
-func processResults(stats *sync.Map, out io.WriteCloser, opts ...tableOption) {
+type testProfileResult struct {
+	*sync.Map
+	start time.Time
+	end   time.Time
+}
+
+func processResults(stats *testProfileResult, out io.WriteCloser, opts ...tableOption) {
 	defer out.Close()
 
 	cfg := outputConfig{
@@ -44,6 +50,7 @@ func processResults(stats *sync.Map, out io.WriteCloser, opts ...tableOption) {
 	var (
 		total                            = 0
 		ok                               = 0
+		noResponse                       = 0
 		totalTime                        time.Duration
 		totalTimeForSuccessfulExecutions time.Duration
 	)
@@ -62,13 +69,24 @@ func processResults(stats *sync.Map, out io.WriteCloser, opts ...tableOption) {
 		key := k.(string)
 		val := v.(runResponse)
 
-		duration := val.end.Sub(val.start)
-
 		total++
-		totalTime += duration
-		if val.success {
-			ok++
-			totalTimeForSuccessfulExecutions += duration
+
+		durationStr := "N/A"
+
+		// We did not receive a response.
+		if val.end.IsZero() {
+			noResponse++
+		} else {
+			duration := val.end.Sub(val.start)
+			durationStr = duration.String()
+
+			totalTime += duration
+
+			if val.success {
+				ok++
+				totalTimeForSuccessfulExecutions += duration
+			}
+
 		}
 
 		log().Debug("processing stat",
@@ -77,7 +95,7 @@ func processResults(stats *sync.Map, out io.WriteCloser, opts ...tableOption) {
 
 		if cfg.detailed {
 			t.AppendRow(table.Row{
-				key, val.start.Format(cfg.timeFormat), val.end.Format(cfg.timeFormat), duration, val.success,
+				key, val.start.Format(cfg.timeFormat), val.end.Format(cfg.timeFormat), durationStr, val.success,
 			})
 		}
 
@@ -110,6 +128,8 @@ func processResults(stats *sync.Map, out io.WriteCloser, opts ...tableOption) {
 		tpse = time.Duration(int64(totalTimeForSuccessfulExecutions) / int64(ok)).String()
 	}
 
+	failed := total - ok - noResponse
+
 	t.AppendSeparator()
 	t.AppendRow(table.Row{
 		"total", total,
@@ -118,7 +138,16 @@ func processResults(stats *sync.Map, out io.WriteCloser, opts ...tableOption) {
 		"success", ok,
 	})
 	t.AppendRow(table.Row{
-		"time", totalTime.String(),
+		"no response", noResponse,
+	})
+	t.AppendRow(table.Row{
+		"failed", failed,
+	})
+	t.AppendRow(table.Row{
+		"test time", stats.end.Sub(stats.start).String(),
+	})
+	t.AppendRow(table.Row{
+		"total execution time", totalTime.String(),
 	})
 	t.AppendRow(table.Row{
 		"time per execution", tpe,

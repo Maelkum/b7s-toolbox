@@ -3,16 +3,24 @@ package spammer
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/Maelkum/b7s/models/execute"
+	"github.com/Maelkum/b7s/models/request"
 )
 
 func getMessagePayload(args ...string) []byte {
 
-	rec := Execute{
-		Request: Request{
+	params := make([]execute.Parameter, 0, len(args))
+	for _, arg := range args {
+		params = append(params, execute.Parameter{Value: arg})
+	}
+
+	rec := request.Execute{
+		Request: execute.Request{
 			FunctionID: testFunction.cid,
 			Method:     testFunction.method,
-			Arguments:  append([]string{}, args...),
-			Config: RequestConfig{
+			Parameters: params,
+			Config: execute.Config{
 				NodeCount: 1,
 			},
 		},

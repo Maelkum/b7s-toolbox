@@ -7,10 +7,15 @@ type testConfig struct {
 
 var testProfiles = []testConfig{
 	// executions, frequency (requests per second)
+	// {100, 10},
 	{1000, 10},
-	{1000, 100},
-	{1000, 200},
-	// {2_000, 1000},
+	{10_000, 50},
+	{10_000, 100},
+	{10_000, 140},
+	{10_000, 200},
+	// {10_000, 300},
+	// {10_000, 500},
+	// {10_000, 1000},
 }
 
 var testFunction = struct {

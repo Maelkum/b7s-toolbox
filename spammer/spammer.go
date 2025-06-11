@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Maelkum/b7s/models/bls"
@@ -50,6 +51,8 @@ func (s *Spammer) Run(ctx context.Context) error {
 		return fmt.Errorf("could not connect to the target: %w", err)
 	}
 
+	start := time.Now()
+
 	for profile_no, test := range getTestProfiles() {
 
 		log().Debug("running test profile",
@@ -71,14 +74,18 @@ func (s *Spammer) Run(ctx context.Context) error {
 		limiter := rate.NewLimiter(rate.Limit(test.frequency), 1)
 
 		var (
-			stats  sync.Map
+			stats = testProfileResult{
+				Map: &sync.Map{},
+			}
 			wg     sync.WaitGroup
 			fireWG sync.WaitGroup
 		)
 
-		s.libp2p.SetStreamHandler(bls.ProtocolID, responseHandler(&wg, &stats))
+		s.libp2p.SetStreamHandler(bls.ProtocolID, responseHandler(&wg, stats.Map))
 
 		fireWG.Add(int(test.executions))
+
+		stats.start = time.Now()
 
 		// Consume responses in a separate goroutine.
 		for i := range test.executions {
@@ -121,18 +128,23 @@ func (s *Spammer) Run(ctx context.Context) error {
 		done := make(chan struct{}, 1)
 
 		go func() {
+			log().Info("waiting for all stream handlers to be called")
 			wg.Wait()
 			close(done)
 		}()
 
+		log().Info("waiting on stop condition")
+
 		select {
-		case <-ctx.Done():
+		case <-tctx.Done():
 			log().Info("context is done")
 		case <-done:
-			log().Info("done waiting")
+			log().Info("all stream handlers ran")
 		}
 
-		log().Info("done waiting for all responses")
+		log().Info("stop condition met")
+
+		stats.end = time.Now()
 
 		var keys []string
 		stats.Range(func(k, v any) bool {
@@ -159,10 +171,13 @@ func (s *Spammer) Run(ctx context.Context) error {
 
 		deactivateSublogger()
 
-		log().Info("completed test profile")
+		log().Info("completed test profile",
+			"duration", stats.end.Sub(stats.start).String(),
+		)
 	}
 
-	log().Info("completed all profiles")
+	log().Info("completed all profiles",
+		"duration", time.Since(start).String())
 
 	return nil
 }
@@ -215,9 +230,20 @@ func (s *Spammer) sendMessage(ctx context.Context, payload []byte) error {
 
 func responseHandler(wg *sync.WaitGroup, stats *sync.Map) network.StreamHandler {
 
+	var n atomic.Int64
+
 	return func(stream network.Stream) {
 		defer stream.Close()
-		defer wg.Done()
+		defer func() {
+			wg.Done()
+
+			updated := n.Add(1)
+			if updated%100 == 0 {
+				log().Debug("number of responses recorded",
+					"n", updated,
+				)
+			}
+		}()
 
 		// Record timestamp early on.
 		ts := time.Now()
@@ -236,6 +262,11 @@ func responseHandler(wg *sync.WaitGroup, stats *sync.Map) network.StreamHandler 
 			log().Error("could not unmarshal response", "err", err)
 			stream.Reset()
 			return
+		}
+
+		if len(response.Results) == 0 {
+			log().Warn("execution failed",
+				"code", response.Code.String())
 		}
 
 		for peer, res := range response.Results {
