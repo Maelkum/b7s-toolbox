@@ -6,8 +6,8 @@ import ruamel.yaml
 import argparse
 parser = argparse.ArgumentParser()
 
-
 parser.add_argument("cmd", help="Command to run")
+parser.add_argument("-r", "--root", help="Root path")
 parser.add_argument("-c", "--count", help="Number of nodes to create")
 parser.add_argument("-b", "--bootnode", help="Boot node to connect to")
 parser.add_argument("-t", "--telemetry", help="Enable telemetry")
@@ -16,8 +16,9 @@ parser.add_argument("-m", "--must-reach-boot-nodes", help="Must reach boot nodes
 args = parser.parse_args()
 
 
-nodes_dir = ".nodes"
-pidfile = ".pids"
+root = args.root or "."
+nodes_dir = f"{root}/.nodes"
+pidfile = f"{root}/.pids"
 keyforge_executable = "/home/aco/code/bless/b7s/cmd/keyforge/keyforge"
 node_executable = "/home/aco/code/bless/b7s/cmd/node/node"
 
