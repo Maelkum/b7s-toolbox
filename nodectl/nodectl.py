@@ -25,7 +25,9 @@ default_cfg = {
     'role': 'worker',
     'log': { 'level': 'trace' },
     'worker': {
-        'runtime-path': '/home/aco/.local/bless-runtime/bin/bls-runtime',
+        # 'runtime-path': '/home/aco/.local/bless-runtime/bin/bls-runtime',
+        'runtime-path': '/home/aco/.local/bless-runtime/bin/',
+        'runtime-cli': 'bls-runtime',
     },
     'connectivity': {
         'address': '127.0.0.1',
