@@ -42,3 +42,4 @@ cmd/spammer/spammer_*.log
 
 *.bin
 
+tools/b7s-batch-mongo-db-clear/b7s-batch-mongo-db-clear
